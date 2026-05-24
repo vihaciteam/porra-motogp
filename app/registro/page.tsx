@@ -5,12 +5,11 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
 export default function RegistroPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [nombre, setNombre] = useState("");
-  const [error, setError] = useState("");
+  const [nombre, setNombre]     = useState("");
+  const [error, setError]       = useState("");
   const [cargando, setCargando] = useState(false);
-  const [registrado, setRegistrado] = useState(false);
   const supabase = createClient();
 
   async function registrarse(e: React.FormEvent) {
@@ -24,41 +23,24 @@ export default function RegistroPage() {
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: { nombre },
-      },
+      options: { data: { nombre } },
     });
 
     if (error) {
       setError("No se pudo crear la cuenta. Prueba con otro email.");
       setCargando(false);
-    } else {
-      setRegistrado(true);
+      return;
     }
-  }
 
-  if (registrado) {
-    return (
-      <div className="flex flex-1 items-center justify-center px-4 py-16 text-center">
-        <div className="flex flex-col gap-4 max-w-sm">
-          <div className="text-5xl">✅</div>
-          <h2 className="text-2xl font-black text-black">¡Cuenta creada!</h2>
-          <p className="text-zinc-500 text-sm">
-            Hemos enviado un email de confirmación a <strong>{email}</strong>.
-            Ábrelo y pulsa el enlace para activar tu cuenta.
-          </p>
-          <Link
-            href="/login"
-            className="mt-4 bg-black text-white font-bold py-3 rounded-full hover:bg-zinc-800 transition-colors"
-          >
-            Ir al login
-          </Link>
-        </div>
-      </div>
-    );
+    // Si hay sesión activa (sin confirmación de email), entrar directo
+    if (data.session) {
+      window.location.href = "/apuesta";
+    } else {
+      window.location.href = "/login?registrado=1";
+    }
   }
 
   return (

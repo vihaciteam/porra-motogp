@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [cargando, setCargando] = useState(false);
   const router      = useRouter();
   const searchParams = useSearchParams();
@@ -17,6 +18,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (searchParams.get("error")) {
       setError("El enlace ha expirado o no es válido. Vuelve a intentarlo.");
+    }
+    if (searchParams.get("registrado")) {
+      setInfo("Cuenta creada. Revisa tu email para confirmarla antes de entrar.");
     }
     // Si ya hay sesión activa, redirigir directamente
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -72,6 +76,12 @@ export default function LoginPage() {
               className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
             />
           </div>
+
+          {info && (
+            <p className="text-blue-700 text-sm bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+              {info}
+            </p>
+          )}
 
           {error && (
             <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-4 py-2">
