@@ -34,17 +34,21 @@ export default async function ClasificacionPage() {
   const [{ data: apuestas }, { data: resultado }, { data: perfiles }] = await Promise.all([
     supabase.from("apuestas").select("user_id, pole, sprint_p1, sprint_p2, sprint_p3, carrera_p1, carrera_p2, carrera_p3, vuelta_rapida, moto3_winner, moto2_winner").eq("carrera_id", GP.id),
     supabase.from("resultados").select("pole, sprint_p1, sprint_p2, sprint_p3, carrera_p1, carrera_p2, carrera_p3, vuelta_rapida, moto3_winner, moto2_winner").eq("carrera_id", GP.id).maybeSingle(),
-    supabase.from("perfiles").select("id, nombre"),
+    supabase.from("perfiles").select("id, nombre, avatar_url"),
   ]);
 
   const res = resultado as RegistroGP | null;
 
   const jugadores = (apuestas ?? [])
-    .map((a) => ({
-      nombre: perfiles?.find((p) => p.id === a.user_id)?.nombre ?? "Jugador",
-      puntos: res ? calcularPuntos(a as RegistroGP, res, GP.votacionEspecial) : null,
-      apuesta: a as RegistroGP,
-    }))
+    .map((a) => {
+      const perfil = perfiles?.find((p) => p.id === a.user_id);
+      return {
+        nombre:    perfil?.nombre    ?? "Jugador",
+        avatarUrl: perfil?.avatar_url ?? null,
+        puntos: res ? calcularPuntos(a as RegistroGP, res, GP.votacionEspecial) : null,
+        apuesta: a as RegistroGP,
+      };
+    })
     .sort((a, b) => (b.puntos ?? -1) - (a.puntos ?? -1));
 
   return (
@@ -113,7 +117,7 @@ export default async function ClasificacionPage() {
                 <span className="text-2xl w-6 text-center shrink-0">
                   {i < 3 ? MEDALLAS[i] : <span className="text-zinc-400 font-bold text-sm">{i + 1}</span>}
                 </span>
-                <Avatar nombre={j.nombre} size={40} />
+                <Avatar nombre={j.nombre} avatarUrl={j.avatarUrl} size={40} />
                 <span className="flex-1 font-bold text-black text-lg">{j.nombre}</span>
                 {j.puntos !== null
                   ? <span className="font-black text-black text-2xl">{j.puntos} pts</span>

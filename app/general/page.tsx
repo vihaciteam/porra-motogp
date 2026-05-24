@@ -8,6 +8,7 @@ const MEDALLAS = ["🥇", "🥈", "🥉"];
 interface Jugador {
   nombre: string;
   user_id: string | null;
+  avatar_url: string | null;
   puntos_historicos: number;
   puntos_app: number;
   total: number;
@@ -25,7 +26,7 @@ export default async function GeneralPage() {
     supabase.from("historial_puntos").select("id, nombre, user_id, puntos"),
     supabase.from("resultados").select("*"),
     supabase.from("apuestas").select("*"),
-    supabase.from("perfiles").select("id, nombre"),
+    supabase.from("perfiles").select("id, nombre, avatar_url"),
   ]);
 
   // ── Calcular puntos en la app por usuario ──────────────────────────────
@@ -57,17 +58,14 @@ export default async function GeneralPage() {
 
   // 1. Jugadores con historial (del Excel)
   for (const h of historial ?? []) {
-    const nombre = h.user_id
-      ? (perfiles?.find((p) => p.id === h.user_id)?.nombre ?? h.nombre)
-      : h.nombre;
-
-    const puntos_app = h.user_id
-      ? (appPointsByUser.get(h.user_id) ?? 0)
-      : 0;
+    const perfil = perfiles?.find((p) => p.id === h.user_id);
+    const nombre = h.user_id ? (perfil?.nombre ?? h.nombre) : h.nombre;
+    const puntos_app = h.user_id ? (appPointsByUser.get(h.user_id) ?? 0) : 0;
 
     standings.push({
       nombre,
-      user_id: h.user_id,
+      user_id:   h.user_id,
+      avatar_url: perfil?.avatar_url ?? null,
       puntos_historicos: h.puntos,
       puntos_app,
       total: h.puntos + puntos_app,
@@ -82,8 +80,9 @@ export default async function GeneralPage() {
       const perfil = perfiles?.find((p) => p.id === userId);
       if (perfil) {
         standings.push({
-          nombre: perfil.nombre,
-          user_id: userId,
+          nombre:    perfil.nombre,
+          user_id:   userId,
+          avatar_url: perfil.avatar_url ?? null,
           puntos_historicos: 0,
           puntos_app: appPts,
           total: appPts,
@@ -152,7 +151,7 @@ export default async function GeneralPage() {
                 </span>
 
                 {/* Avatar */}
-                <Avatar nombre={j.nombre} size={44} />
+                <Avatar nombre={j.nombre} avatarUrl={j.avatar_url} size={44} />
 
                 {/* Nombre + diferencia */}
                 <div className="flex-1 min-w-0">

@@ -35,7 +35,9 @@ export default function Header({ email }: Props) {
         </Link>
         {email ? (
           <>
-            <span className="text-zinc-500 hidden sm:inline">{email}</span>
+            <Link href="/perfil" className="hover:text-white transition-colors">
+              Mi perfil
+            </Link>
             <button
               onClick={cerrarSesion}
               className="text-red-500 hover:text-red-400 transition-colors font-medium"

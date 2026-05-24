@@ -14,25 +14,28 @@ function colorPorNombre(nombre: string): string {
   return COLORES[hash % COLORES.length];
 }
 
-/** "Ñoño" → "nono" · "JL83" → "jl83" · "Carlos" → "carlos" */
 function slugify(nombre: string): string {
   return nombre
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "") // quita tildes y diacríticos
-    .replace(/[^a-z0-9]/g, "");      // solo letras y números
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]/g, "");
 }
 
 export function Avatar({
   nombre,
+  avatarUrl,
   size = 44,
 }: {
   nombre: string;
+  avatarUrl?: string | null;
   size?: number;
 }) {
   const [error, setError] = useState(false);
-  const slug = slugify(nombre);
   const iniciales = nombre.slice(0, 2).toUpperCase();
+
+  // Prioridad: foto subida por el usuario → foto local admin → iniciales
+  const src = avatarUrl ?? `/avatars/${slugify(nombre)}.jpg`;
 
   if (!error) {
     return (
@@ -42,7 +45,7 @@ export function Avatar({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`/avatars/${slug}.jpg`}
+          src={src}
           alt={nombre}
           className="w-full h-full object-cover"
           onError={() => setError(true)}
@@ -51,7 +54,6 @@ export function Avatar({
     );
   }
 
-  // Sin foto → círculo de color con las iniciales
   return (
     <div
       className={`rounded-full shrink-0 flex items-center justify-center text-white font-black ring-2 ring-white shadow ${colorPorNombre(nombre)}`}
