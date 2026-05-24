@@ -2,6 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { nombrePiloto } from "@/lib/pilotos";
 import { calcularPuntos, PUNTOS, type RegistroGP } from "@/lib/puntuacion";
 import { gpActual } from "@/lib/calendario";
+import { Avatar } from "@/app/components/Avatar";
 
 const MEDALLAS = ["🥇", "🥈", "🥉"];
 const GP = gpActual();
@@ -109,9 +110,10 @@ export default async function ClasificacionPage() {
             >
               {/* Nombre y puntos */}
               <div className="flex items-center gap-3">
-                <span className="text-2xl w-8 text-center">
+                <span className="text-2xl w-6 text-center shrink-0">
                   {i < 3 ? MEDALLAS[i] : <span className="text-zinc-400 font-bold text-sm">{i + 1}</span>}
                 </span>
+                <Avatar nombre={j.nombre} size={40} />
                 <span className="flex-1 font-bold text-black text-lg">{j.nombre}</span>
                 {j.puntos !== null
                   ? <span className="font-black text-black text-2xl">{j.puntos} pts</span>

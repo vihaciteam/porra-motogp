@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { calcularPuntos, type RegistroGP } from "@/lib/puntuacion";
 import { CALENDARIO } from "@/lib/calendario";
+import { Avatar } from "@/app/components/Avatar";
 
 const MEDALLAS = ["🥇", "🥈", "🥉"];
 
@@ -143,12 +144,15 @@ export default async function GeneralPage() {
                 }`}
               >
                 {/* Posición */}
-                <span className="text-2xl w-8 text-center shrink-0">
+                <span className="text-2xl w-6 text-center shrink-0">
                   {i < 3
                     ? MEDALLAS[i]
                     : <span className="text-zinc-400 font-bold text-base">{i + 1}</span>
                   }
                 </span>
+
+                {/* Avatar */}
+                <Avatar nombre={j.nombre} size={44} />
 
                 {/* Nombre + diferencia */}
                 <div className="flex-1 min-w-0">
