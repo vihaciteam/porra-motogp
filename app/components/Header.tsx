@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 
+const ADMIN_EMAIL = "vihaciteam@gmail.com";
+
 type Props = {
   email: string | null;
 };
@@ -38,6 +40,11 @@ export default function Header({ email }: Props) {
         </Link>
         {email ? (
           <>
+            {email === ADMIN_EMAIL && (
+              <Link href="/admin" className="hover:text-white transition-colors text-red-500 font-medium">
+                Admin
+              </Link>
+            )}
             <Link href="/perfil" className="hover:text-white transition-colors">
               Mi perfil
             </Link>
