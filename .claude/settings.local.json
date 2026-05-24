@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(taskkill /PID 6700 /F; Start-Sleep -Seconds 2; $env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); Set-Location \"C:\\\\Users\\\\JoseC\\\\OneDrive\\\\Documentos 1\\\\porra-motogp\"; npm run dev)"
+    ]
+  }
+}

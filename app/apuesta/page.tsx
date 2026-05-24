@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 const CARRERA_ACTUAL = {
+  id: "catalunya-2025",
   nombre: "Gran Premio de Catalunya",
   circuito: "Circuit de Barcelona-Catalunya",
   fecha: "22 jun 2025",
@@ -30,24 +32,48 @@ const PILOTOS = [
 ];
 
 const POSICIONES = ["1º", "2º", "3º"] as const;
-type Posicion = 0 | 1 | 2;
 
 export default function ApuestaPage() {
   const [seleccion, setSeleccion] = useState<(number | null)[]>([null, null, null]);
   const [confirmado, setConfirmado] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardado, setErrorGuardado] = useState("");
+  const [apuestaExistente, setApuestaExistente] = useState(false);
+  const supabase = createClient();
 
-  const posicionLibre = seleccion.findIndex((s) => s === null) as Posicion | -1;
+  // Al entrar, comprobamos si el usuario ya tiene apuesta guardada
+  useEffect(() => {
+    async function cargarApuesta() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("apuestas")
+        .select("p1, p2, p3")
+        .eq("user_id", user.id)
+        .eq("carrera_id", CARRERA_ACTUAL.id)
+        .maybeSingle();
+
+      if (data) {
+        setSeleccion([data.p1, data.p2, data.p3]);
+        setApuestaExistente(true);
+        setConfirmado(true);
+      }
+    }
+    cargarApuesta();
+  }, []);
+
+  const posicionLibre = seleccion.findIndex((s) => s === null);
 
   function seleccionarPiloto(numero: number) {
     const yaSeleccionado = seleccion.indexOf(numero);
     if (yaSeleccionado !== -1) {
-      // Si ya estaba, lo deseleccionamos
       const nueva = [...seleccion];
       nueva[yaSeleccionado] = null;
       setSeleccion(nueva);
       return;
     }
-    if (posicionLibre === -1) return; // Ya hay 3 elegidos
+    if (posicionLibre === -1) return;
     const nueva = [...seleccion];
     nueva[posicionLibre] = numero;
     setSeleccion(nueva);
@@ -56,6 +82,34 @@ export default function ApuestaPage() {
   function resetear() {
     setSeleccion([null, null, null]);
     setConfirmado(false);
+    setErrorGuardado("");
+  }
+
+  async function confirmarApuesta() {
+    setGuardando(true);
+    setErrorGuardado("");
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase.from("apuestas").upsert(
+      {
+        user_id: user.id,
+        carrera_id: CARRERA_ACTUAL.id,
+        p1: seleccion[0],
+        p2: seleccion[1],
+        p3: seleccion[2],
+      },
+      { onConflict: "user_id,carrera_id" }
+    );
+
+    if (error) {
+      setErrorGuardado("No se pudo guardar la apuesta. Inténtalo de nuevo.");
+    } else {
+      setConfirmado(true);
+      setApuestaExistente(true);
+    }
+    setGuardando(false);
   }
 
   const listo = seleccion.every((s) => s !== null);
@@ -64,8 +118,12 @@ export default function ApuestaPage() {
     return (
       <div className="flex flex-col flex-1 items-center justify-center gap-6 py-20 px-6 text-center">
         <div className="text-6xl">🎉</div>
-        <h2 className="text-3xl font-black text-black">¡Apuesta registrada!</h2>
-        <p className="text-zinc-500">Tu pronóstico para el <strong>{CARRERA_ACTUAL.nombre}</strong>:</p>
+        <h2 className="text-3xl font-black text-black">
+          {apuestaExistente ? "¡Apuesta guardada!" : "¡Apuesta registrada!"}
+        </h2>
+        <p className="text-zinc-500">
+          Tu pronóstico para el <strong>{CARRERA_ACTUAL.nombre}</strong>:
+        </p>
         <div className="flex flex-col gap-3 mt-2">
           {seleccion.map((num, i) => {
             const piloto = PILOTOS.find((p) => p.numero === num)!;
@@ -91,7 +149,7 @@ export default function ApuestaPage() {
   return (
     <div className="flex flex-col flex-1 px-4 py-8 max-w-4xl mx-auto w-full gap-8">
 
-      {/* Info de la carrera */}
+      {/* Info carrera */}
       <div className="bg-black text-white rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <p className="text-zinc-400 text-xs uppercase tracking-widest mb-1">Próxima carrera</p>
@@ -133,7 +191,6 @@ export default function ApuestaPage() {
         </div>
       </div>
 
-      {/* Instrucción */}
       <p className="text-sm text-zinc-500 -mt-4">
         {posicionLibre !== -1
           ? `Elige el piloto que quedará en ${POSICIONES[posicionLibre]} posición:`
@@ -170,7 +227,13 @@ export default function ApuestaPage() {
         })}
       </div>
 
-      {/* Botones de acción */}
+      {errorGuardado && (
+        <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+          {errorGuardado}
+        </p>
+      )}
+
+      {/* Botones */}
       <div className="flex gap-3 pb-8">
         <button
           onClick={resetear}
@@ -179,11 +242,15 @@ export default function ApuestaPage() {
           Reiniciar
         </button>
         <button
-          onClick={() => setConfirmado(true)}
-          disabled={!listo}
+          onClick={confirmarApuesta}
+          disabled={!listo || guardando}
           className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold px-8 py-3 rounded-full transition-colors"
         >
-          {listo ? "Confirmar apuesta" : `Elige ${seleccion.filter(s => s === null).length} piloto${seleccion.filter(s => s === null).length !== 1 ? "s" : ""} más`}
+          {guardando
+            ? "Guardando..."
+            : listo
+            ? "Confirmar apuesta"
+            : `Elige ${seleccion.filter((s) => s === null).length} piloto${seleccion.filter((s) => s === null).length !== 1 ? "s" : ""} más`}
         </button>
       </div>
 
