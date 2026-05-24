@@ -2,34 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { PILOTOS } from "@/lib/pilotos";
+import { gpActual } from "@/lib/calendario";
 
-const CARRERA_ACTUAL = {
-  id: "catalunya-2025",
-  nombre: "Gran Premio de Catalunya",
-  circuito: "Circuit de Barcelona-Catalunya",
-  fecha: "22 jun 2025",
-};
+const GP = gpActual();
 
-const PILOTOS = [
-  { numero: 1,  nombre: "Francesco Bagnaia",     equipo: "Ducati Lenovo" },
-  { numero: 93, nombre: "Marc Márquez",           equipo: "Ducati Lenovo" },
-  { numero: 89, nombre: "Jorge Martín",           equipo: "Aprilia Racing" },
-  { numero: 73, nombre: "Álex Márquez",           equipo: "Gresini Racing" },
-  { numero: 49, nombre: "Fabio Di Giannantonio",  equipo: "VR46 Racing" },
-  { numero: 21, nombre: "Franco Morbidelli",      equipo: "Pramac Yamaha" },
-  { numero: 23, nombre: "Enea Bastianini",         equipo: "KTM Factory" },
-  { numero: 33, nombre: "Brad Binder",            equipo: "KTM Factory" },
-  { numero: 31, nombre: "Pedro Acosta",           equipo: "KTM GasGas Tech3" },
-  { numero: 12, nombre: "Maverick Viñales",       equipo: "KTM GasGas Tech3" },
-  { numero: 72, nombre: "Marco Bezzecchi",        equipo: "Aprilia Trackhouse" },
-  { numero: 20, nombre: "Fabio Quartararo",       equipo: "Monster Yamaha" },
-  { numero: 42, nombre: "Álex Rins",              equipo: "Monster Yamaha" },
-  { numero: 10, nombre: "Luca Marini",            equipo: "Repsol Honda" },
-  { numero: 36, nombre: "Joan Mir",               equipo: "Repsol Honda" },
-  { numero: 41, nombre: "Aleix Espargaró",        equipo: "LCR Honda" },
-  { numero: 5,  nombre: "Johann Zarco",           equipo: "LCR Honda" },
-  { numero: 43, nombre: "Jack Miller",            equipo: "Pramac Yamaha" },
-];
+function formatFecha(iso: string) {
+  return new Date(iso + "T12:00:00").toLocaleDateString("es-ES", {
+    day: "numeric", month: "short", year: "numeric",
+  });
+}
 
 const POSICIONES = ["1º", "2º", "3º"] as const;
 
@@ -51,7 +33,7 @@ export default function ApuestaPage() {
         .from("apuestas")
         .select("p1, p2, p3")
         .eq("user_id", user.id)
-        .eq("carrera_id", CARRERA_ACTUAL.id)
+        .eq("carrera_id", GP?.id ?? "")
         .maybeSingle();
 
       if (data) {
@@ -95,7 +77,7 @@ export default function ApuestaPage() {
     const { error } = await supabase.from("apuestas").upsert(
       {
         user_id: user.id,
-        carrera_id: CARRERA_ACTUAL.id,
+        carrera_id: GP?.id ?? "",
         p1: seleccion[0],
         p2: seleccion[1],
         p3: seleccion[2],
@@ -122,7 +104,7 @@ export default function ApuestaPage() {
           {apuestaExistente ? "¡Apuesta guardada!" : "¡Apuesta registrada!"}
         </h2>
         <p className="text-zinc-500">
-          Tu pronóstico para el <strong>{CARRERA_ACTUAL.nombre}</strong>:
+          Tu pronóstico para el <strong>{GP?.nombre ?? "próxima carrera"}</strong>:
         </p>
         <div className="flex flex-col gap-3 mt-2">
           {seleccion.map((num, i) => {
@@ -153,8 +135,10 @@ export default function ApuestaPage() {
       <div className="bg-black text-white rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <p className="text-zinc-400 text-xs uppercase tracking-widest mb-1">Próxima carrera</p>
-          <h1 className="text-xl font-black">{CARRERA_ACTUAL.nombre}</h1>
-          <p className="text-zinc-400 text-sm">{CARRERA_ACTUAL.circuito} · {CARRERA_ACTUAL.fecha}</p>
+          <h1 className="text-xl font-black">{GP?.nombre ?? "—"}</h1>
+          <p className="text-zinc-400 text-sm">
+            {GP?.circuito} · {GP ? formatFecha(GP.fechaCarrera) : ""}
+          </p>
         </div>
         <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full self-start sm:self-auto">
           Apuestas abiertas
