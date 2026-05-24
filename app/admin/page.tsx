@@ -66,6 +66,13 @@ export default function AdminPage() {
   const [guardandoHorario, setGuardandoHorario] = useState(false);
   const [mensajeHorario, setMensajeHorario] = useState<{ texto: string; ok: boolean } | null>(null);
 
+  // ── Podcasts ──
+  const [podcasts,        setPodcasts]        = useState<{ id: string; titulo: string; url: string }[]>([]);
+  const [tituloPodcast,   setTituloPodcast]   = useState("");
+  const [urlPodcast,      setUrlPodcast]      = useState("");
+  const [guardandoPodcast, setGuardandoPodcast] = useState(false);
+  const [mensajePodcast,  setMensajePodcast]  = useState<{ texto: string; ok: boolean } | null>(null);
+
   // ── Resultados ──
   const [pole,     setPole]     = useState<number | null>(null);
   const [sprintP1, setSprintP1] = useState<number | null>(null);
@@ -93,6 +100,10 @@ export default function AdminPage() {
           supabase.from("resultados").select("*").eq("carrera_id", GP.id).maybeSingle(),
         ]);
 
+        const { data: podcastsData } = await supabase
+          .from("podcasts").select("*").order("created_at", { ascending: false });
+        setPodcasts(podcastsData ?? []);
+
         if (cierres) {
           setCierreSabado(toLocal(cierres.cierre_sabado));
           setCierreDomingo(toLocal(cierres.cierre_domingo));
@@ -114,6 +125,30 @@ export default function AdminPage() {
     }
     cargar();
   }, []);
+
+  async function agregarPodcast(e: React.FormEvent) {
+    e.preventDefault();
+    setGuardandoPodcast(true);
+    setMensajePodcast(null);
+
+    const { error } = await supabase.from("podcasts").insert({ titulo: tituloPodcast, url: urlPodcast });
+
+    if (error) {
+      setMensajePodcast({ texto: "Error al añadir el podcast.", ok: false });
+    } else {
+      const { data } = await supabase.from("podcasts").select("*").order("created_at", { ascending: false });
+      setPodcasts(data ?? []);
+      setTituloPodcast("");
+      setUrlPodcast("");
+      setMensajePodcast({ texto: "✅ Podcast añadido correctamente.", ok: true });
+    }
+    setGuardandoPodcast(false);
+  }
+
+  async function eliminarPodcast(id: string) {
+    await supabase.from("podcasts").delete().eq("id", id);
+    setPodcasts((prev) => prev.filter((p) => p.id !== id));
+  }
 
   async function guardarHorarios(e: React.FormEvent) {
     e.preventDefault();
@@ -322,6 +357,68 @@ export default function AdminPage() {
           {guardandoRes ? "Guardando…" : "Guardar resultado oficial"}
         </button>
       </form>
+
+      {/* ══ PODCASTS ══ */}
+      <div className="flex flex-col gap-5 p-6 bg-zinc-50 rounded-2xl border-2 border-zinc-100">
+        <h2 className="text-lg font-black text-black">🎙️ Gestionar podcasts</h2>
+
+        <form onSubmit={agregarPodcast} className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-bold text-black">Título del episodio</label>
+            <input
+              type="text"
+              value={tituloPodcast}
+              onChange={(e) => setTituloPodcast(e.target.value)}
+              required
+              placeholder="Ej: Previa GP de Italia 2026"
+              className="border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-black transition-colors bg-white"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-bold text-black">URL de YouTube</label>
+            <input
+              type="url"
+              value={urlPodcast}
+              onChange={(e) => setUrlPodcast(e.target.value)}
+              required
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-black transition-colors bg-white"
+            />
+          </div>
+
+          {mensajePodcast && (
+            <p className={`text-sm rounded-lg px-4 py-2 border ${mensajePodcast.ok ? "text-green-700 bg-green-50 border-green-200" : "text-red-600 bg-red-50 border-red-200"}`}>
+              {mensajePodcast.texto}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={guardandoPodcast}
+            className="bg-black hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold py-2.5 rounded-full transition-colors"
+          >
+            {guardandoPodcast ? "Añadiendo…" : "Añadir podcast"}
+          </button>
+        </form>
+
+        {podcasts.length > 0 && (
+          <div className="flex flex-col gap-2 mt-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">Publicados</p>
+            {podcasts.map((p) => (
+              <div key={p.id} className="flex items-center justify-between gap-3 bg-white rounded-xl px-4 py-3 border-2 border-zinc-100">
+                <p className="text-sm font-medium text-black truncate">{p.titulo}</p>
+                <button
+                  onClick={() => eliminarPodcast(p.id)}
+                  className="text-red-500 hover:text-red-700 text-xs font-bold shrink-0 transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

@@ -29,6 +29,9 @@ export default function Header({ email }: Props) {
         <Link href="/apuesta" className="hover:text-white transition-colors">
           Mi apuesta
         </Link>
+        <Link href="/noticias" className="hover:text-white transition-colors hidden sm:inline">
+          Noticias
+        </Link>
         <Link href="/historial" className="hover:text-white transition-colors hidden sm:inline">
           Historial
         </Link>
