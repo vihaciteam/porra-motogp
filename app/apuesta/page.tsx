@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { PILOTOS } from "@/lib/pilotos";
 import { gpActual } from "@/lib/calendario";
-import { PUNTOS } from "@/lib/puntuacion";
+import { PUNTOS, jornadaAbierta } from "@/lib/puntuacion";
 
 const GP = gpActual();
 
@@ -16,13 +16,14 @@ function formatFecha(iso: string) {
 
 /** Dropdown reutilizable para elegir un piloto */
 function PilotoSelect({
-  label, pts, value, onChange, excluir = [],
+  label, pts, value, onChange, excluir = [], disabled = false,
 }: {
   label: string;
   pts: number;
   value: number | null;
   onChange: (v: number | null) => void;
   excluir?: (number | null)[];
+  disabled?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -33,7 +34,12 @@ function PilotoSelect({
       <select
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value ? +e.target.value : null)}
-        className="border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-black transition-colors bg-white"
+        disabled={disabled}
+        className={`border-2 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors
+          ${disabled
+            ? "border-zinc-100 bg-zinc-50 text-zinc-400 cursor-not-allowed"
+            : "border-zinc-200 bg-white focus:border-black"
+          }`}
       >
         <option value="">— Elige piloto —</option>
         {PILOTOS.filter(
@@ -45,6 +51,21 @@ function PilotoSelect({
         ))}
       </select>
     </div>
+  );
+}
+
+function BadgeEstado({ abierto }: { abierto: boolean }) {
+  if (abierto) {
+    return (
+      <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-green-100 text-green-700">
+        Abierto
+      </span>
+    );
+  }
+  return (
+    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-600">
+      Cerrado
+    </span>
   );
 }
 
@@ -62,44 +83,64 @@ export default function ApuestaPage() {
   // Especial
   const [moto3Winner, setMoto3Winner] = useState("");
   const [moto2Winner, setMoto2Winner] = useState("");
+  // Horarios de cierre
+  const [cierreSabado,  setCierreSabado]  = useState<string | null>(null);
+  const [cierreDomingo, setCierreDomingo] = useState<string | null>(null);
+  const [cargando, setCargando] = useState(true);
   // UI
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<{ texto: string; ok: boolean } | null>(null);
 
   const supabase = createClient();
 
-  // Cargar apuesta guardada si existe
   useEffect(() => {
     async function cargar() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !GP) return;
+      if (!user || !GP) { setCargando(false); return; }
 
-      const { data } = await supabase
-        .from("apuestas")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("carrera_id", GP.id)
-        .maybeSingle();
+      const [{ data: apuesta }, { data: cierres }] = await Promise.all([
+        supabase
+          .from("apuestas")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("carrera_id", GP.id)
+          .maybeSingle(),
+        supabase
+          .from("cierres")
+          .select("cierre_sabado, cierre_domingo")
+          .eq("carrera_id", GP.id)
+          .maybeSingle(),
+      ]);
 
-      if (data) {
-        setPole(data.pole ?? null);
-        setSprintP1(data.sprint_p1 ?? null);
-        setSprintP2(data.sprint_p2 ?? null);
-        setSprintP3(data.sprint_p3 ?? null);
-        setCarreraP1(data.carrera_p1 ?? null);
-        setCarreraP2(data.carrera_p2 ?? null);
-        setCarreraP3(data.carrera_p3 ?? null);
-        setVueltaRapida(data.vuelta_rapida ?? null);
-        setMoto3Winner(data.moto3_winner ?? "");
-        setMoto2Winner(data.moto2_winner ?? "");
+      if (apuesta) {
+        setPole(apuesta.pole ?? null);
+        setSprintP1(apuesta.sprint_p1 ?? null);
+        setSprintP2(apuesta.sprint_p2 ?? null);
+        setSprintP3(apuesta.sprint_p3 ?? null);
+        setCarreraP1(apuesta.carrera_p1 ?? null);
+        setCarreraP2(apuesta.carrera_p2 ?? null);
+        setCarreraP3(apuesta.carrera_p3 ?? null);
+        setVueltaRapida(apuesta.vuelta_rapida ?? null);
+        setMoto3Winner(apuesta.moto3_winner ?? "");
+        setMoto2Winner(apuesta.moto2_winner ?? "");
       }
+      if (cierres) {
+        setCierreSabado(cierres.cierre_sabado ?? null);
+        setCierreDomingo(cierres.cierre_domingo ?? null);
+      }
+      setCargando(false);
     }
     cargar();
   }, []);
 
+  // Calculado en cada render → siempre actualizado
+  const sabadoAbierto  = jornadaAbierta(cierreSabado);
+  const domingoAbierto = jornadaAbierta(cierreDomingo);
+  const todoCerrado    = !sabadoAbierto && !domingoAbierto;
+
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
-    if (!GP) return;
+    if (!GP || todoCerrado) return;
     setGuardando(true);
     setMensaje(null);
 
@@ -140,6 +181,12 @@ export default function ApuestaPage() {
     );
   }
 
+  if (cargando) {
+    return (
+      <div className="flex flex-1 items-center justify-center text-zinc-400">Cargando…</div>
+    );
+  }
+
   return (
     <form
       onSubmit={guardar}
@@ -159,6 +206,16 @@ export default function ApuestaPage() {
         )}
       </div>
 
+      {/* Banner si todo está cerrado */}
+      {todoCerrado && (
+        <div className="bg-zinc-900 text-white rounded-2xl px-6 py-4 text-center">
+          <p className="font-bold text-lg">🔒 Votación cerrada</p>
+          <p className="text-zinc-400 text-sm mt-1">
+            El plazo de apuestas para este GP ya ha terminado.
+          </p>
+        </div>
+      )}
+
       {/* ── SÁBADO ── */}
       <section className="flex flex-col gap-5">
         <div className="flex items-center gap-3">
@@ -166,14 +223,22 @@ export default function ApuestaPage() {
           <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
             Sábado · {formatFecha(GP.fechaSprint)}
           </span>
+          <BadgeEstado abierto={sabadoAbierto} />
           <div className="h-px flex-1 bg-zinc-200" />
         </div>
+
+        {!sabadoAbierto && (
+          <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
+            🔒 La votación del sábado (pole y sprint) ya está cerrada.
+          </p>
+        )}
 
         <PilotoSelect
           label="🏁 Pole position"
           pts={PUNTOS.sabado.pole}
           value={pole}
           onChange={setPole}
+          disabled={!sabadoAbierto}
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -183,6 +248,7 @@ export default function ApuestaPage() {
             value={sprintP1}
             onChange={setSprintP1}
             excluir={[sprintP2, sprintP3]}
+            disabled={!sabadoAbierto}
           />
           <PilotoSelect
             label="🥈 Sprint P2"
@@ -190,6 +256,7 @@ export default function ApuestaPage() {
             value={sprintP2}
             onChange={setSprintP2}
             excluir={[sprintP1, sprintP3]}
+            disabled={!sabadoAbierto}
           />
           <PilotoSelect
             label="🥉 Sprint P3"
@@ -197,6 +264,7 @@ export default function ApuestaPage() {
             value={sprintP3}
             onChange={setSprintP3}
             excluir={[sprintP1, sprintP2]}
+            disabled={!sabadoAbierto}
           />
         </div>
       </section>
@@ -208,8 +276,15 @@ export default function ApuestaPage() {
           <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
             Domingo · {formatFecha(GP.fechaCarrera)}
           </span>
+          <BadgeEstado abierto={domingoAbierto} />
           <div className="h-px flex-1 bg-zinc-200" />
         </div>
+
+        {!domingoAbierto && (
+          <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
+            🔒 La votación del domingo (carrera y especiales) ya está cerrada.
+          </p>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <PilotoSelect
@@ -218,6 +293,7 @@ export default function ApuestaPage() {
             value={carreraP1}
             onChange={setCarreraP1}
             excluir={[carreraP2, carreraP3]}
+            disabled={!domingoAbierto}
           />
           <PilotoSelect
             label="🥈 Carrera P2"
@@ -225,6 +301,7 @@ export default function ApuestaPage() {
             value={carreraP2}
             onChange={setCarreraP2}
             excluir={[carreraP1, carreraP3]}
+            disabled={!domingoAbierto}
           />
           <PilotoSelect
             label="🥉 Carrera P3"
@@ -232,6 +309,7 @@ export default function ApuestaPage() {
             value={carreraP3}
             onChange={setCarreraP3}
             excluir={[carreraP1, carreraP2]}
+            disabled={!domingoAbierto}
           />
         </div>
 
@@ -240,6 +318,7 @@ export default function ApuestaPage() {
           pts={PUNTOS.domingo.vueltaRapida}
           value={vueltaRapida}
           onChange={setVueltaRapida}
+          disabled={!domingoAbierto}
         />
       </section>
 
@@ -267,7 +346,12 @@ export default function ApuestaPage() {
                 value={moto3Winner}
                 onChange={(e) => setMoto3Winner(e.target.value)}
                 placeholder="Nombre del piloto"
-                className="border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500 transition-colors"
+                disabled={!domingoAbierto}
+                className={`border-2 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors
+                  ${!domingoAbierto
+                    ? "border-zinc-100 bg-zinc-50 text-zinc-400 cursor-not-allowed"
+                    : "border-zinc-200 focus:border-red-500"
+                  }`}
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -280,7 +364,12 @@ export default function ApuestaPage() {
                 value={moto2Winner}
                 onChange={(e) => setMoto2Winner(e.target.value)}
                 placeholder="Nombre del piloto"
-                className="border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500 transition-colors"
+                disabled={!domingoAbierto}
+                className={`border-2 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors
+                  ${!domingoAbierto
+                    ? "border-zinc-100 bg-zinc-50 text-zinc-400 cursor-not-allowed"
+                    : "border-zinc-200 focus:border-red-500"
+                  }`}
               />
             </div>
           </div>
@@ -313,10 +402,15 @@ export default function ApuestaPage() {
 
       <button
         type="submit"
-        disabled={guardando}
+        disabled={guardando || todoCerrado}
         className="bg-red-600 hover:bg-red-700 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold py-3 rounded-full transition-colors mb-8"
       >
-        {guardando ? "Guardando…" : "Guardar apuesta"}
+        {todoCerrado
+          ? "🔒 Votación cerrada"
+          : guardando
+          ? "Guardando…"
+          : "Guardar apuesta"
+        }
       </button>
     </form>
   );
