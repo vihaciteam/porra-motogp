@@ -26,40 +26,52 @@ export default function Header({ email }: Props) {
 
   return (
     <header className="bg-black relative z-50">
+      {/* Línea roja inferior */}
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-600 to-transparent" />
+
       {/* ── Barra principal ── */}
-      <div className="px-5 py-4 flex items-center justify-between">
-        <Link href="/" onClick={cerrar} className="flex items-center gap-2">
-          <span className="text-red-500 text-2xl font-black tracking-tight">PORRA</span>
-          <span className="text-white text-2xl font-black tracking-tight">MOTOGP</span>
+      <div className="px-5 py-3.5 flex items-center justify-between">
+        <Link href="/" onClick={cerrar} className="flex items-center gap-1 group">
+          <span className="text-red-500 text-xl font-black tracking-tighter group-hover:text-red-400 transition-colors">PORRA</span>
+          <span className="text-zinc-600 text-xl font-black">/</span>
+          <span className="text-white text-xl font-black tracking-tighter">MOTOGP</span>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex gap-6 text-sm text-zinc-400 items-center">
-          <Link href="/apuesta"      className="hover:text-white transition-colors">Mi apuesta</Link>
-          <Link href="/noticias"     className="hover:text-white transition-colors">Noticias</Link>
-          <Link href="/historial"    className="hover:text-white transition-colors">Historial</Link>
-          <Link href="/general"      className="hover:text-white transition-colors">General</Link>
-          <Link href="/clasificacion" className="hover:text-white transition-colors">GP actual</Link>
+        <nav className="hidden md:flex gap-1 text-sm text-zinc-400 items-center">
+          {[
+            { href: "/apuesta",       label: "Mi apuesta" },
+            { href: "/noticias",      label: "Noticias" },
+            { href: "/historial",     label: "Historial" },
+            { href: "/general",       label: "General" },
+            { href: "/clasificacion", label: "GP actual" },
+          ].map(({ href, label }) => (
+            <Link key={href} href={href}
+              className="px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white transition-colors">
+              {label}
+            </Link>
+          ))}
+
           {email ? (
             <>
               {email === ADMIN_EMAIL && (
-                <Link href="/admin" className="text-red-500 hover:text-red-400 font-medium transition-colors">
+                <Link href="/admin"
+                  className="px-3 py-1.5 rounded-lg text-red-500 hover:bg-red-950 hover:text-red-400 font-bold transition-colors">
                   Admin
                 </Link>
               )}
-              <Link href="/perfil" className="hover:text-white transition-colors">Mi perfil</Link>
-              <button
-                onClick={cerrarSesion}
-                className="text-red-500 hover:text-red-400 transition-colors font-medium"
-              >
+              <Link href="/perfil"
+                className="px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white transition-colors">
+                Mi perfil
+              </Link>
+              <button onClick={cerrarSesion}
+                className="ml-2 px-4 py-1.5 rounded-lg border border-zinc-700 text-zinc-400 hover:border-red-600 hover:text-red-500 font-medium transition-colors text-sm">
                 Salir
               </button>
             </>
           ) : (
-            <Link
-              href="/login"
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded-full font-medium transition-colors"
-            >
+            <Link href="/login"
+              className="ml-2 bg-red-600 hover:bg-red-500 text-white px-5 py-1.5 rounded-full font-bold transition-colors shadow-lg shadow-red-900/30">
               Entrar
             </Link>
           )}
@@ -77,35 +89,42 @@ export default function Header({ email }: Props) {
         </button>
       </div>
 
-      {/* ── Menú móvil desplegable ── */}
+      {/* ── Menú móvil ── */}
       {menuAbierto && (
-        <nav className="md:hidden bg-zinc-900 border-t border-zinc-800 flex flex-col py-2">
-          <Link href="/apuesta"      onClick={cerrar} className="px-5 py-3.5 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Mi apuesta</Link>
-          <Link href="/noticias"     onClick={cerrar} className="px-5 py-3.5 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Noticias</Link>
-          <Link href="/historial"    onClick={cerrar} className="px-5 py-3.5 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Historial</Link>
-          <Link href="/general"      onClick={cerrar} className="px-5 py-3.5 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">General</Link>
-          <Link href="/clasificacion" onClick={cerrar} className="px-5 py-3.5 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">GP actual</Link>
+        <nav className="md:hidden bg-zinc-950 border-t border-zinc-800 flex flex-col py-2">
+          {[
+            { href: "/apuesta",        label: "Mi apuesta",   icon: "🗳️" },
+            { href: "/noticias",       label: "Noticias",     icon: "📰" },
+            { href: "/historial",      label: "Historial",    icon: "🏁" },
+            { href: "/general",        label: "General",      icon: "📊" },
+            { href: "/clasificacion",  label: "GP actual",    icon: "🏎️" },
+          ].map(({ href, label, icon }) => (
+            <Link key={href} href={href} onClick={cerrar}
+              className="flex items-center gap-3 px-5 py-3.5 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">
+              <span>{icon}</span><span>{label}</span>
+            </Link>
+          ))}
+
           {email ? (
             <>
               {email === ADMIN_EMAIL && (
-                <Link href="/admin" onClick={cerrar} className="px-5 py-3.5 text-red-500 hover:text-red-400 hover:bg-zinc-800 font-medium transition-colors">
-                  Admin
+                <Link href="/admin" onClick={cerrar}
+                  className="flex items-center gap-3 px-5 py-3.5 text-red-500 hover:bg-zinc-800 font-bold transition-colors">
+                  <span>⚙️</span><span>Admin</span>
                 </Link>
               )}
-              <Link href="/perfil" onClick={cerrar} className="px-5 py-3.5 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">Mi perfil</Link>
-              <button
-                onClick={cerrarSesion}
-                className="text-left px-5 py-3.5 text-red-500 hover:text-red-400 hover:bg-zinc-800 font-medium transition-colors"
-              >
-                Salir
+              <Link href="/perfil" onClick={cerrar}
+                className="flex items-center gap-3 px-5 py-3.5 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">
+                <span>👤</span><span>Mi perfil</span>
+              </Link>
+              <button onClick={cerrarSesion}
+                className="flex items-center gap-3 px-5 py-3.5 text-red-500 hover:bg-zinc-800 font-medium transition-colors w-full text-left">
+                <span>🚪</span><span>Salir</span>
               </button>
             </>
           ) : (
-            <Link
-              href="/login"
-              onClick={cerrar}
-              className="mx-5 my-3 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-full font-medium text-center transition-colors"
-            >
+            <Link href="/login" onClick={cerrar}
+              className="mx-5 my-3 bg-red-600 hover:bg-red-500 text-white px-4 py-3 rounded-full font-bold text-center transition-colors">
               Entrar
             </Link>
           )}

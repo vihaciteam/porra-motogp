@@ -97,102 +97,112 @@ export default async function GeneralPage() {
   const gpsEnApp = resultados?.length ?? 0;
   const gpsHistoricos = 6; // Tailandia, Brasil, USA, España, Francia, Cataluña
 
-  return (
-    <div className="flex flex-col flex-1 px-4 py-8 max-w-3xl mx-auto w-full gap-6">
+  const podiumCard = [
+    "border-yellow-400 bg-gradient-to-r from-yellow-50 to-white shadow-md shadow-yellow-100",
+    "border-zinc-300 bg-gradient-to-r from-zinc-50 to-white shadow-sm",
+    "border-amber-500 bg-gradient-to-r from-amber-50 to-white shadow-sm",
+  ];
+  const podiumPos = [
+    "bg-yellow-400 text-black",
+    "bg-zinc-300 text-black",
+    "bg-amber-500 text-white",
+  ];
 
-      {/* Cabecera */}
-      <div>
-        <span className="text-xs font-bold uppercase tracking-widest text-red-600">
+  return (
+    <div className="flex flex-col flex-1 max-w-3xl mx-auto w-full">
+
+      {/* Cabecera oscura estilo MotoGP */}
+      <div className="bg-black text-white px-4 py-8 sm:px-6">
+        <span className="text-red-500 text-xs font-black uppercase tracking-[0.25em]">
           Temporada 2026
         </span>
-        <h1 className="text-3xl font-black text-black mt-1">Clasificación general</h1>
-        <p className="text-zinc-400 text-sm mt-1">
-          {gpsHistoricos} GPs previos + {gpsEnApp} GP{gpsEnApp !== 1 ? "s" : ""} en la app
+        <h1 className="text-3xl sm:text-4xl font-black mt-1">Clasificación General</h1>
+        <p className="text-zinc-500 text-sm mt-1">
+          {gpsHistoricos} GPs previos · {gpsEnApp} GP{gpsEnApp !== 1 ? "s" : ""} en la app
         </p>
-      </div>
-
-      {/* Leyenda */}
-      <div className="flex flex-wrap gap-2 text-xs">
-        <span className="bg-zinc-800 text-white rounded-full px-3 py-1 font-medium">
-          ⚫ Puntos previos ({gpsHistoricos} GPs)
-        </span>
-        {gpsEnApp > 0 && (
-          <span className="bg-red-600 text-white rounded-full px-3 py-1 font-medium">
-            🔴 Puntos en la app ({gpsEnApp} GP{gpsEnApp !== 1 ? "s" : ""})
+        <div className="flex flex-wrap gap-2 mt-4 text-xs">
+          <span className="bg-zinc-800 text-zinc-300 rounded-full px-3 py-1 font-medium border border-zinc-700">
+            ⚫ Puntos previos
           </span>
-        )}
+          {gpsEnApp > 0 && (
+            <span className="bg-red-900/50 text-red-400 rounded-full px-3 py-1 font-medium border border-red-800">
+              🔴 Puntos en la app
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Clasificación */}
-      {standings.length === 0 ? (
-        <p className="text-zinc-400 text-sm text-center py-8">
-          No hay datos disponibles.
-        </p>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {standings.map((j, i) => {
-            const lider = standings[0].total;
-            const diferencia = lider - j.total;
-            return (
-              <div
-                key={i}
-                className={`rounded-xl border-2 px-5 py-4 flex items-center gap-4 ${
-                  i === 0
-                    ? "border-red-500 bg-red-50"
-                    : "border-zinc-100 bg-white"
-                }`}
-              >
-                {/* Posición */}
-                <span className="text-2xl w-6 text-center shrink-0">
-                  {i < 3
-                    ? MEDALLAS[i]
-                    : <span className="text-zinc-400 font-bold text-base">{i + 1}</span>
-                  }
-                </span>
+      <div className="px-4 sm:px-6 py-6">
+        {standings.length === 0 ? (
+          <p className="text-zinc-400 text-sm text-center py-8">No hay datos disponibles.</p>
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {standings.map((j, i) => {
+              const lider = standings[0].total;
+              const diferencia = lider - j.total;
+              const esPodio = i < 3;
+              return (
+                <div
+                  key={i}
+                  className={`rounded-2xl border-2 px-4 py-3.5 flex items-center gap-3 transition-all ${
+                    esPodio ? podiumCard[i] : "border-zinc-100 bg-white hover:border-zinc-200 hover:shadow-sm"
+                  }`}
+                >
+                  {/* Posición */}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-black text-sm ${
+                    esPodio ? podiumPos[i] : "bg-zinc-100 text-zinc-500"
+                  }`}>
+                    {i + 1}
+                  </div>
 
-                {/* Avatar */}
-                <Avatar nombre={j.nombre} avatarUrl={j.avatar_url} size={44} />
+                  {/* Avatar */}
+                  <Avatar nombre={j.nombre} avatarUrl={j.avatar_url} size={42} />
 
-                {/* Nombre + diferencia */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-black text-lg leading-tight truncate">
-                    {j.nombre}
-                  </p>
-                  {i > 0 && (
-                    <p className="text-xs text-zinc-400">
-                      a {diferencia} pts del líder
+                  {/* Nombre + diferencia */}
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-black leading-tight truncate ${i === 0 ? "text-lg" : "text-base text-black"}`}>
+                      {j.nombre}
                     </p>
-                  )}
-                </div>
+                    {i > 0 && (
+                      <p className="text-xs text-zinc-400 tabular-nums">
+                        − {diferencia} pts
+                      </p>
+                    )}
+                    {i === 0 && (
+                      <p className="text-xs text-yellow-600 font-bold">LÍDER</p>
+                    )}
+                  </div>
 
-                {/* Desglose */}
-                <div className="flex items-center gap-1.5 text-sm shrink-0">
-                  <span className="bg-zinc-100 text-zinc-600 rounded-lg px-2.5 py-1 font-semibold tabular-nums">
-                    {j.puntos_historicos}
+                  {/* Desglose */}
+                  <div className="flex items-center gap-1 text-xs shrink-0">
+                    <span className="bg-zinc-100 text-zinc-600 rounded-md px-2 py-1 font-semibold tabular-nums">
+                      {j.puntos_historicos}
+                    </span>
+                    {j.puntos_app > 0 && (
+                      <>
+                        <span className="text-zinc-300">+</span>
+                        <span className="bg-red-100 text-red-700 rounded-md px-2 py-1 font-semibold tabular-nums">
+                          {j.puntos_app}
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Total */}
+                  <span className={`font-black tabular-nums shrink-0 ${i === 0 ? "text-2xl text-black" : "text-xl text-black"}`}>
+                    {j.total}
                   </span>
-                  {j.puntos_app > 0 && (
-                    <>
-                      <span className="text-zinc-300 text-xs">+</span>
-                      <span className="bg-red-100 text-red-700 rounded-lg px-2.5 py-1 font-semibold tabular-nums">
-                        {j.puntos_app}
-                      </span>
-                    </>
-                  )}
                 </div>
+              );
+            })}
+          </div>
+        )}
 
-                {/* Total */}
-                <span className="font-black text-black text-2xl tabular-nums shrink-0">
-                  {j.total}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <p className="text-xs text-zinc-400 text-center pb-4">
-        Puntos grises: acumulados antes de la app · Puntos rojos: desde la app
-      </p>
+        <p className="text-xs text-zinc-400 text-center mt-6 pb-4">
+          Puntos grises: antes de la app · Puntos rojos: desde la app
+        </p>
+      </div>
     </div>
   );
 }
