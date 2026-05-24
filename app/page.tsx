@@ -1,34 +1,26 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-
-      {/* Barra superior */}
-      <header className="bg-black px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-red-500 text-2xl font-black tracking-tight">PORRA</span>
-          <span className="text-white text-2xl font-black tracking-tight">MOTOGP</span>
-        </div>
-        <nav className="flex gap-6 text-sm text-zinc-400">
-          <a href="#" className="hover:text-white transition-colors">Carrera</a>
-          <a href="#" className="hover:text-white transition-colors">Clasificación</a>
-          <a href="#" className="hover:text-white transition-colors">Mis apuestas</a>
-        </nav>
-      </header>
+    <div className="flex flex-col flex-1">
 
       {/* Hero */}
-      <section className="bg-black text-white px-6 py-20 flex flex-col items-center text-center gap-6">
-        <h1 className="text-5xl font-black tracking-tight">
+      <section className="bg-black text-white px-6 py-24 flex flex-col items-center text-center gap-6">
+        <h1 className="text-5xl font-black tracking-tight max-w-2xl">
           ¿Quién ganará la <span className="text-red-500">próxima carrera</span>?
         </h1>
         <p className="text-zinc-400 text-lg max-w-xl">
           Haz tu apuesta antes de que empiece la carrera, compite con tus amigos y sube en la clasificación.
         </p>
-        <button className="mt-4 bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-3 rounded-full text-lg transition-colors">
+        <Link
+          href="/apuesta"
+          className="mt-4 bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-3 rounded-full text-lg transition-colors"
+        >
           Hacer mi apuesta
-        </button>
+        </Link>
       </section>
 
-      {/* Tarjetas de funcionalidades */}
+      {/* Tarjetas */}
       <section className="flex flex-col sm:flex-row gap-6 px-6 py-16 max-w-4xl mx-auto w-full">
 
         <div className="flex-1 border-2 border-black rounded-2xl p-6 flex flex-col gap-3">
@@ -56,11 +48,6 @@ export default function Home() {
         </div>
 
       </section>
-
-      {/* Pie de página */}
-      <footer className="mt-auto bg-black text-zinc-600 text-center text-sm py-4">
-        Porra MotoGP · Hecho con amigos
-      </footer>
 
     </div>
   );

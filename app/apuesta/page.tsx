@@ -1,0 +1,192 @@
+"use client";
+
+import { useState } from "react";
+
+const CARRERA_ACTUAL = {
+  nombre: "Gran Premio de Catalunya",
+  circuito: "Circuit de Barcelona-Catalunya",
+  fecha: "22 jun 2025",
+};
+
+const PILOTOS = [
+  { numero: 1,  nombre: "Francesco Bagnaia",     equipo: "Ducati Lenovo" },
+  { numero: 93, nombre: "Marc Márquez",           equipo: "Ducati Lenovo" },
+  { numero: 89, nombre: "Jorge Martín",           equipo: "Aprilia Racing" },
+  { numero: 73, nombre: "Álex Márquez",           equipo: "Gresini Racing" },
+  { numero: 49, nombre: "Fabio Di Giannantonio",  equipo: "VR46 Racing" },
+  { numero: 21, nombre: "Franco Morbidelli",      equipo: "Pramac Yamaha" },
+  { numero: 23, nombre: "Enea Bastianini",         equipo: "KTM Factory" },
+  { numero: 33, nombre: "Brad Binder",            equipo: "KTM Factory" },
+  { numero: 31, nombre: "Pedro Acosta",           equipo: "KTM GasGas Tech3" },
+  { numero: 12, nombre: "Maverick Viñales",       equipo: "KTM GasGas Tech3" },
+  { numero: 72, nombre: "Marco Bezzecchi",        equipo: "Aprilia Trackhouse" },
+  { numero: 20, nombre: "Fabio Quartararo",       equipo: "Monster Yamaha" },
+  { numero: 42, nombre: "Álex Rins",              equipo: "Monster Yamaha" },
+  { numero: 10, nombre: "Luca Marini",            equipo: "Repsol Honda" },
+  { numero: 36, nombre: "Joan Mir",               equipo: "Repsol Honda" },
+  { numero: 41, nombre: "Aleix Espargaró",        equipo: "LCR Honda" },
+  { numero: 5,  nombre: "Johann Zarco",           equipo: "LCR Honda" },
+  { numero: 43, nombre: "Jack Miller",            equipo: "Pramac Yamaha" },
+];
+
+const POSICIONES = ["1º", "2º", "3º"] as const;
+type Posicion = 0 | 1 | 2;
+
+export default function ApuestaPage() {
+  const [seleccion, setSeleccion] = useState<(number | null)[]>([null, null, null]);
+  const [confirmado, setConfirmado] = useState(false);
+
+  const posicionLibre = seleccion.findIndex((s) => s === null) as Posicion | -1;
+
+  function seleccionarPiloto(numero: number) {
+    const yaSeleccionado = seleccion.indexOf(numero);
+    if (yaSeleccionado !== -1) {
+      // Si ya estaba, lo deseleccionamos
+      const nueva = [...seleccion];
+      nueva[yaSeleccionado] = null;
+      setSeleccion(nueva);
+      return;
+    }
+    if (posicionLibre === -1) return; // Ya hay 3 elegidos
+    const nueva = [...seleccion];
+    nueva[posicionLibre] = numero;
+    setSeleccion(nueva);
+  }
+
+  function resetear() {
+    setSeleccion([null, null, null]);
+    setConfirmado(false);
+  }
+
+  const listo = seleccion.every((s) => s !== null);
+
+  if (confirmado) {
+    return (
+      <div className="flex flex-col flex-1 items-center justify-center gap-6 py-20 px-6 text-center">
+        <div className="text-6xl">🎉</div>
+        <h2 className="text-3xl font-black text-black">¡Apuesta registrada!</h2>
+        <p className="text-zinc-500">Tu pronóstico para el <strong>{CARRERA_ACTUAL.nombre}</strong>:</p>
+        <div className="flex flex-col gap-3 mt-2">
+          {seleccion.map((num, i) => {
+            const piloto = PILOTOS.find((p) => p.numero === num)!;
+            return (
+              <div key={i} className="flex items-center gap-4 bg-black text-white px-6 py-3 rounded-xl">
+                <span className="text-red-500 font-black text-xl w-8">{POSICIONES[i]}</span>
+                <span className="font-bold">{piloto.nombre}</span>
+                <span className="text-zinc-400 text-sm">#{piloto.numero}</span>
+              </div>
+            );
+          })}
+        </div>
+        <button
+          onClick={resetear}
+          className="mt-6 border-2 border-black text-black font-bold px-6 py-2 rounded-full hover:bg-black hover:text-white transition-colors"
+        >
+          Cambiar apuesta
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col flex-1 px-4 py-8 max-w-4xl mx-auto w-full gap-8">
+
+      {/* Info de la carrera */}
+      <div className="bg-black text-white rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <p className="text-zinc-400 text-xs uppercase tracking-widest mb-1">Próxima carrera</p>
+          <h1 className="text-xl font-black">{CARRERA_ACTUAL.nombre}</h1>
+          <p className="text-zinc-400 text-sm">{CARRERA_ACTUAL.circuito} · {CARRERA_ACTUAL.fecha}</p>
+        </div>
+        <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full self-start sm:self-auto">
+          Apuestas abiertas
+        </span>
+      </div>
+
+      {/* Selección actual */}
+      <div>
+        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-3">Tu pronóstico</h2>
+        <div className="flex gap-3">
+          {POSICIONES.map((pos, i) => {
+            const piloto = seleccion[i] !== null ? PILOTOS.find((p) => p.numero === seleccion[i]) : null;
+            return (
+              <div
+                key={i}
+                className={`flex-1 rounded-xl border-2 px-3 py-3 flex flex-col items-center gap-1 min-h-[80px] justify-center transition-colors ${
+                  piloto ? "border-red-500 bg-red-50" : "border-dashed border-zinc-300"
+                }`}
+              >
+                <span className={`text-xs font-black uppercase ${piloto ? "text-red-600" : "text-zinc-400"}`}>
+                  {pos}
+                </span>
+                {piloto ? (
+                  <>
+                    <span className="font-bold text-sm text-center leading-tight">{piloto.nombre}</span>
+                    <span className="text-xs text-zinc-400">#{piloto.numero}</span>
+                  </>
+                ) : (
+                  <span className="text-xs text-zinc-300">Sin elegir</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Instrucción */}
+      <p className="text-sm text-zinc-500 -mt-4">
+        {posicionLibre !== -1
+          ? `Elige el piloto que quedará en ${POSICIONES[posicionLibre]} posición:`
+          : "¡Ya tienes tu top 3! Pulsa confirmar o toca un piloto para cambiarlo."}
+      </p>
+
+      {/* Grid de pilotos */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {PILOTOS.map((piloto) => {
+          const posIdx = seleccion.indexOf(piloto.numero);
+          const seleccionado = posIdx !== -1;
+          return (
+            <button
+              key={piloto.numero}
+              onClick={() => seleccionarPiloto(piloto.numero)}
+              className={`rounded-xl border-2 px-4 py-3 text-left transition-all ${
+                seleccionado
+                  ? "border-red-500 bg-red-50"
+                  : "border-zinc-200 hover:border-black bg-white"
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-2xl font-black text-zinc-200">#{piloto.numero}</span>
+                {seleccionado && (
+                  <span className="bg-red-600 text-white text-xs font-black px-2 py-0.5 rounded-full">
+                    {POSICIONES[posIdx]}
+                  </span>
+                )}
+              </div>
+              <p className="font-bold text-sm text-black leading-tight">{piloto.nombre}</p>
+              <p className="text-xs text-zinc-400 mt-0.5">{piloto.equipo}</p>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Botones de acción */}
+      <div className="flex gap-3 pb-8">
+        <button
+          onClick={resetear}
+          className="border-2 border-zinc-200 text-zinc-500 font-bold px-6 py-3 rounded-full hover:border-black hover:text-black transition-colors"
+        >
+          Reiniciar
+        </button>
+        <button
+          onClick={() => setConfirmado(true)}
+          disabled={!listo}
+          className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold px-8 py-3 rounded-full transition-colors"
+        >
+          {listo ? "Confirmar apuesta" : `Elige ${seleccion.filter(s => s === null).length} piloto${seleccion.filter(s => s === null).length !== 1 ? "s" : ""} más`}
+        </button>
+      </div>
+
+    </div>
+  );
+}
