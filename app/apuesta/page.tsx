@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { PILOTOS } from "@/lib/pilotos";
 import { gpActual } from "@/lib/calendario";
+import { PUNTOS } from "@/lib/puntuacion";
 
 const GP = gpActual();
 
@@ -13,231 +14,310 @@ function formatFecha(iso: string) {
   });
 }
 
-const POSICIONES = ["1º", "2º", "3º"] as const;
+/** Dropdown reutilizable para elegir un piloto */
+function PilotoSelect({
+  label, pts, value, onChange, excluir = [],
+}: {
+  label: string;
+  pts: number;
+  value: number | null;
+  onChange: (v: number | null) => void;
+  excluir?: (number | null)[];
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-bold text-black">{label}</label>
+        <span className="text-xs font-bold text-red-600">{pts} pt{pts !== 1 ? "s" : ""}</span>
+      </div>
+      <select
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value ? +e.target.value : null)}
+        className="border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-black transition-colors bg-white"
+      >
+        <option value="">— Elige piloto —</option>
+        {PILOTOS.filter(
+          (p) => !excluir.filter(Boolean).includes(p.numero) || p.numero === value
+        ).map((p) => (
+          <option key={p.numero} value={p.numero}>
+            #{p.numero} {p.nombre}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 export default function ApuestaPage() {
-  const [seleccion, setSeleccion] = useState<(number | null)[]>([null, null, null]);
-  const [confirmado, setConfirmado] = useState(false);
+  // Sábado
+  const [pole,     setPole]     = useState<number | null>(null);
+  const [sprintP1, setSprintP1] = useState<number | null>(null);
+  const [sprintP2, setSprintP2] = useState<number | null>(null);
+  const [sprintP3, setSprintP3] = useState<number | null>(null);
+  // Domingo
+  const [carreraP1,    setCarreraP1]    = useState<number | null>(null);
+  const [carreraP2,    setCarreraP2]    = useState<number | null>(null);
+  const [carreraP3,    setCarreraP3]    = useState<number | null>(null);
+  const [vueltaRapida, setVueltaRapida] = useState<number | null>(null);
+  // Especial
+  const [moto3Winner, setMoto3Winner] = useState("");
+  const [moto2Winner, setMoto2Winner] = useState("");
+  // UI
   const [guardando, setGuardando] = useState(false);
-  const [errorGuardado, setErrorGuardado] = useState("");
-  const [apuestaExistente, setApuestaExistente] = useState(false);
+  const [mensaje, setMensaje] = useState<{ texto: string; ok: boolean } | null>(null);
+
   const supabase = createClient();
 
-  // Al entrar, comprobamos si el usuario ya tiene apuesta guardada
+  // Cargar apuesta guardada si existe
   useEffect(() => {
-    async function cargarApuesta() {
+    async function cargar() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || !GP) return;
 
       const { data } = await supabase
         .from("apuestas")
-        .select("p1, p2, p3")
+        .select("*")
         .eq("user_id", user.id)
-        .eq("carrera_id", GP?.id ?? "")
+        .eq("carrera_id", GP.id)
         .maybeSingle();
 
       if (data) {
-        setSeleccion([data.p1, data.p2, data.p3]);
-        setApuestaExistente(true);
-        setConfirmado(true);
+        setPole(data.pole ?? null);
+        setSprintP1(data.sprint_p1 ?? null);
+        setSprintP2(data.sprint_p2 ?? null);
+        setSprintP3(data.sprint_p3 ?? null);
+        setCarreraP1(data.carrera_p1 ?? null);
+        setCarreraP2(data.carrera_p2 ?? null);
+        setCarreraP3(data.carrera_p3 ?? null);
+        setVueltaRapida(data.vuelta_rapida ?? null);
+        setMoto3Winner(data.moto3_winner ?? "");
+        setMoto2Winner(data.moto2_winner ?? "");
       }
     }
-    cargarApuesta();
+    cargar();
   }, []);
 
-  const posicionLibre = seleccion.findIndex((s) => s === null);
-
-  function seleccionarPiloto(numero: number) {
-    const yaSeleccionado = seleccion.indexOf(numero);
-    if (yaSeleccionado !== -1) {
-      const nueva = [...seleccion];
-      nueva[yaSeleccionado] = null;
-      setSeleccion(nueva);
-      return;
-    }
-    if (posicionLibre === -1) return;
-    const nueva = [...seleccion];
-    nueva[posicionLibre] = numero;
-    setSeleccion(nueva);
-  }
-
-  function resetear() {
-    setSeleccion([null, null, null]);
-    setConfirmado(false);
-    setErrorGuardado("");
-  }
-
-  async function confirmarApuesta() {
+  async function guardar(e: React.FormEvent) {
+    e.preventDefault();
+    if (!GP) return;
     setGuardando(true);
-    setErrorGuardado("");
+    setMensaje(null);
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const { error } = await supabase.from("apuestas").upsert(
       {
-        user_id: user.id,
-        carrera_id: GP?.id ?? "",
-        p1: seleccion[0],
-        p2: seleccion[1],
-        p3: seleccion[2],
+        user_id:       user.id,
+        carrera_id:    GP.id,
+        pole,
+        sprint_p1:     sprintP1,
+        sprint_p2:     sprintP2,
+        sprint_p3:     sprintP3,
+        carrera_p1:    carreraP1,
+        carrera_p2:    carreraP2,
+        carrera_p3:    carreraP3,
+        vuelta_rapida: vueltaRapida,
+        moto3_winner:  moto3Winner || null,
+        moto2_winner:  moto2Winner || null,
       },
       { onConflict: "user_id,carrera_id" }
     );
 
-    if (error) {
-      setErrorGuardado("No se pudo guardar la apuesta. Inténtalo de nuevo.");
-    } else {
-      setConfirmado(true);
-      setApuestaExistente(true);
-    }
+    setMensaje(
+      error
+        ? { texto: "Error al guardar. Inténtalo de nuevo.", ok: false }
+        : { texto: "✅ Apuesta guardada correctamente.", ok: true }
+    );
     setGuardando(false);
   }
 
-  const listo = seleccion.every((s) => s !== null);
-
-  if (confirmado) {
+  if (!GP) {
     return (
-      <div className="flex flex-col flex-1 items-center justify-center gap-6 py-20 px-6 text-center">
-        <div className="text-6xl">🎉</div>
-        <h2 className="text-3xl font-black text-black">
-          {apuestaExistente ? "¡Apuesta guardada!" : "¡Apuesta registrada!"}
-        </h2>
-        <p className="text-zinc-500">
-          Tu pronóstico para el <strong>{GP?.nombre ?? "próxima carrera"}</strong>:
-        </p>
-        <div className="flex flex-col gap-3 mt-2">
-          {seleccion.map((num, i) => {
-            const piloto = PILOTOS.find((p) => p.numero === num)!;
-            return (
-              <div key={i} className="flex items-center gap-4 bg-black text-white px-6 py-3 rounded-xl">
-                <span className="text-red-500 font-black text-xl w-8">{POSICIONES[i]}</span>
-                <span className="font-bold">{piloto.nombre}</span>
-                <span className="text-zinc-400 text-sm">#{piloto.numero}</span>
-              </div>
-            );
-          })}
-        </div>
-        <button
-          onClick={resetear}
-          className="mt-6 border-2 border-black text-black font-bold px-6 py-2 rounded-full hover:bg-black hover:text-white transition-colors"
-        >
-          Cambiar apuesta
-        </button>
+      <div className="flex flex-1 items-center justify-center text-zinc-400 text-center px-4 py-20">
+        <p>No hay más GPs en el calendario. ¡Hasta la próxima temporada!</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-8 max-w-4xl mx-auto w-full gap-8">
-
-      {/* Info carrera */}
+    <form
+      onSubmit={guardar}
+      className="flex flex-col flex-1 px-4 py-8 max-w-2xl mx-auto w-full gap-8"
+    >
+      {/* Cabecera GP */}
       <div className="bg-black text-white rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <p className="text-zinc-400 text-xs uppercase tracking-widest mb-1">Próxima carrera</p>
-          <h1 className="text-xl font-black">{GP?.nombre ?? "—"}</h1>
-          <p className="text-zinc-400 text-sm">
-            {GP?.circuito} · {GP ? formatFecha(GP.fechaCarrera) : ""}
-          </p>
+          <h1 className="text-xl font-black">{GP.nombre}</h1>
+          <p className="text-zinc-400 text-sm">{GP.circuito}</p>
         </div>
-        <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full self-start sm:self-auto">
-          Apuestas abiertas
+        {GP.votacionEspecial && (
+          <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full self-start sm:self-auto">
+            ⭐ GP Especial
+          </span>
+        )}
+      </div>
+
+      {/* ── SÁBADO ── */}
+      <section className="flex flex-col gap-5">
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-zinc-200" />
+          <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
+            Sábado · {formatFecha(GP.fechaSprint)}
+          </span>
+          <div className="h-px flex-1 bg-zinc-200" />
+        </div>
+
+        <PilotoSelect
+          label="🏁 Pole position"
+          pts={PUNTOS.sabado.pole}
+          value={pole}
+          onChange={setPole}
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <PilotoSelect
+            label="🥇 Sprint P1"
+            pts={PUNTOS.sabado.sprint1}
+            value={sprintP1}
+            onChange={setSprintP1}
+            excluir={[sprintP2, sprintP3]}
+          />
+          <PilotoSelect
+            label="🥈 Sprint P2"
+            pts={PUNTOS.sabado.sprint2}
+            value={sprintP2}
+            onChange={setSprintP2}
+            excluir={[sprintP1, sprintP3]}
+          />
+          <PilotoSelect
+            label="🥉 Sprint P3"
+            pts={PUNTOS.sabado.sprint3}
+            value={sprintP3}
+            onChange={setSprintP3}
+            excluir={[sprintP1, sprintP2]}
+          />
+        </div>
+      </section>
+
+      {/* ── DOMINGO ── */}
+      <section className="flex flex-col gap-5">
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-zinc-200" />
+          <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
+            Domingo · {formatFecha(GP.fechaCarrera)}
+          </span>
+          <div className="h-px flex-1 bg-zinc-200" />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <PilotoSelect
+            label="🥇 Carrera P1"
+            pts={PUNTOS.domingo.carrera1}
+            value={carreraP1}
+            onChange={setCarreraP1}
+            excluir={[carreraP2, carreraP3]}
+          />
+          <PilotoSelect
+            label="🥈 Carrera P2"
+            pts={PUNTOS.domingo.carrera2}
+            value={carreraP2}
+            onChange={setCarreraP2}
+            excluir={[carreraP1, carreraP3]}
+          />
+          <PilotoSelect
+            label="🥉 Carrera P3"
+            pts={PUNTOS.domingo.carrera3}
+            value={carreraP3}
+            onChange={setCarreraP3}
+            excluir={[carreraP1, carreraP2]}
+          />
+        </div>
+
+        <PilotoSelect
+          label="⚡ Vuelta rápida"
+          pts={PUNTOS.domingo.vueltaRapida}
+          value={vueltaRapida}
+          onChange={setVueltaRapida}
+        />
+      </section>
+
+      {/* ── ESPECIAL (solo Austria) ── */}
+      {GP.votacionEspecial && (
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-red-200" />
+            <span className="text-xs font-black uppercase tracking-widest text-red-500">
+              ⭐ Votación especial
+            </span>
+            <div className="h-px flex-1 bg-red-200" />
+          </div>
+          <p className="text-xs text-zinc-400">
+            Escribe el nombre exacto del piloto ganador en Moto3 y Moto2 (10 pts cada uno si aciertas).
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-bold text-black">🏍️ Ganador Moto3</label>
+                <span className="text-xs font-bold text-red-600">10 pts</span>
+              </div>
+              <input
+                type="text"
+                value={moto3Winner}
+                onChange={(e) => setMoto3Winner(e.target.value)}
+                placeholder="Nombre del piloto"
+                className="border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500 transition-colors"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-bold text-black">🏍️ Ganador Moto2</label>
+                <span className="text-xs font-bold text-red-600">10 pts</span>
+              </div>
+              <input
+                type="text"
+                value={moto2Winner}
+                onChange={(e) => setMoto2Winner(e.target.value)}
+                placeholder="Nombre del piloto"
+                className="border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500 transition-colors"
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Resumen de puntos */}
+      <div className="bg-zinc-50 rounded-2xl px-5 py-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-zinc-400">
+        <span>🏁 Pole <strong className="text-black">1</strong></span>
+        <span>Sprint 🥇<strong className="text-black">12</strong> 🥈<strong className="text-black">9</strong> 🥉<strong className="text-black">7</strong></span>
+        <span>Carrera 🥇<strong className="text-black">25</strong> 🥈<strong className="text-black">20</strong> 🥉<strong className="text-black">16</strong></span>
+        <span>⚡ V.Rápida <strong className="text-black">1</strong></span>
+        {GP.votacionEspecial && <span>⭐ Especial <strong className="text-black">10+10</strong></span>}
+        <span className="ml-auto font-bold text-black">
+          Máx: {GP.votacionEspecial ? "111" : "91"} pts
         </span>
       </div>
 
-      {/* Selección actual */}
-      <div>
-        <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-3">Tu pronóstico</h2>
-        <div className="flex gap-3">
-          {POSICIONES.map((pos, i) => {
-            const piloto = seleccion[i] !== null ? PILOTOS.find((p) => p.numero === seleccion[i]) : null;
-            return (
-              <div
-                key={i}
-                className={`flex-1 rounded-xl border-2 px-3 py-3 flex flex-col items-center gap-1 min-h-[80px] justify-center transition-colors ${
-                  piloto ? "border-red-500 bg-red-50" : "border-dashed border-zinc-300"
-                }`}
-              >
-                <span className={`text-xs font-black uppercase ${piloto ? "text-red-600" : "text-zinc-400"}`}>
-                  {pos}
-                </span>
-                {piloto ? (
-                  <>
-                    <span className="font-bold text-sm text-center leading-tight">{piloto.nombre}</span>
-                    <span className="text-xs text-zinc-400">#{piloto.numero}</span>
-                  </>
-                ) : (
-                  <span className="text-xs text-zinc-300">Sin elegir</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <p className="text-sm text-zinc-500 -mt-4">
-        {posicionLibre !== -1
-          ? `Elige el piloto que quedará en ${POSICIONES[posicionLibre]} posición:`
-          : "¡Ya tienes tu top 3! Pulsa confirmar o toca un piloto para cambiarlo."}
-      </p>
-
-      {/* Grid de pilotos */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {PILOTOS.map((piloto) => {
-          const posIdx = seleccion.indexOf(piloto.numero);
-          const seleccionado = posIdx !== -1;
-          return (
-            <button
-              key={piloto.numero}
-              onClick={() => seleccionarPiloto(piloto.numero)}
-              className={`rounded-xl border-2 px-4 py-3 text-left transition-all ${
-                seleccionado
-                  ? "border-red-500 bg-red-50"
-                  : "border-zinc-200 hover:border-black bg-white"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-2xl font-black text-zinc-200">#{piloto.numero}</span>
-                {seleccionado && (
-                  <span className="bg-red-600 text-white text-xs font-black px-2 py-0.5 rounded-full">
-                    {POSICIONES[posIdx]}
-                  </span>
-                )}
-              </div>
-              <p className="font-bold text-sm text-black leading-tight">{piloto.nombre}</p>
-              <p className="text-xs text-zinc-400 mt-0.5">{piloto.equipo}</p>
-            </button>
-          );
-        })}
-      </div>
-
-      {errorGuardado && (
-        <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-4 py-2">
-          {errorGuardado}
+      {mensaje && (
+        <p
+          className={`text-sm rounded-lg px-4 py-3 border ${
+            mensaje.ok
+              ? "text-green-700 bg-green-50 border-green-200"
+              : "text-red-600 bg-red-50 border-red-200"
+          }`}
+        >
+          {mensaje.texto}
         </p>
       )}
 
-      {/* Botones */}
-      <div className="flex gap-3 pb-8">
-        <button
-          onClick={resetear}
-          className="border-2 border-zinc-200 text-zinc-500 font-bold px-6 py-3 rounded-full hover:border-black hover:text-black transition-colors"
-        >
-          Reiniciar
-        </button>
-        <button
-          onClick={confirmarApuesta}
-          disabled={!listo || guardando}
-          className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold px-8 py-3 rounded-full transition-colors"
-        >
-          {guardando
-            ? "Guardando..."
-            : listo
-            ? "Confirmar apuesta"
-            : `Elige ${seleccion.filter((s) => s === null).length} piloto${seleccion.filter((s) => s === null).length !== 1 ? "s" : ""} más`}
-        </button>
-      </div>
-
-    </div>
+      <button
+        type="submit"
+        disabled={guardando}
+        className="bg-red-600 hover:bg-red-700 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold py-3 rounded-full transition-colors mb-8"
+      >
+        {guardando ? "Guardando…" : "Guardar apuesta"}
+      </button>
+    </form>
   );
 }
