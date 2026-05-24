@@ -240,13 +240,13 @@ export default function ApuestaPage() {
   return (
     <form
       onSubmit={guardar}
-      className="flex flex-col flex-1 px-4 py-8 max-w-2xl mx-auto w-full gap-8"
+      className="flex flex-col flex-1 max-w-2xl mx-auto w-full"
     >
-      {/* Cabecera GP */}
-      <div className="bg-black text-white rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      {/* Cabecera GP — oscura tipo MotoGP */}
+      <div className="bg-black text-white px-5 py-6 sm:px-8 sm:py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <p className="text-zinc-400 text-xs uppercase tracking-widest mb-1">Próxima carrera</p>
-          <h1 className="text-xl font-black">{GP.nombre}</h1>
+          <p className="text-red-500 text-xs font-black uppercase tracking-[0.25em] mb-1">Próxima carrera</p>
+          <h1 className="text-2xl sm:text-3xl font-black">{GP.nombre}</h1>
           <p className="text-zinc-400 text-sm">{GP.circuito}</p>
         </div>
         {GP.votacionEspecial && (
@@ -256,6 +256,7 @@ export default function ApuestaPage() {
         )}
       </div>
 
+      <div className="px-4 sm:px-6 py-6 flex flex-col gap-6">
       {/* ── RESUMEN DE TU APUESTA GUARDADA ── */}
       {(pole || sprintP1 || sprintP2 || sprintP3 || carreraP1 || carreraP2 || carreraP3 || vueltaRapida || moto3Winner || moto2Winner) && (
         <div className="bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-5 py-4 flex flex-col gap-3">
@@ -509,6 +510,7 @@ export default function ApuestaPage() {
           : "Guardar apuesta"
         }
       </button>
+      </div>
     </form>
   );
 }

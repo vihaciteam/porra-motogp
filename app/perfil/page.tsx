@@ -92,15 +92,17 @@ export default function PerfilPage() {
   );
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-10 max-w-md mx-auto w-full gap-8">
+    <div className="flex flex-col flex-1 max-w-md mx-auto w-full">
 
-      <div>
-        <h1 className="text-3xl font-black text-black">Mi perfil</h1>
-        <p className="text-zinc-400 text-sm mt-1">{email}</p>
+      <div className="bg-black text-white px-4 py-8 sm:px-6">
+        <span className="text-red-500 text-xs font-black uppercase tracking-[0.25em]">Tu cuenta</span>
+        <h1 className="text-3xl font-black mt-1">Mi perfil</h1>
+        <p className="text-zinc-500 text-sm mt-1">{email}</p>
       </div>
 
+      <div className="px-4 sm:px-6 py-6 flex flex-col gap-6">
       {/* Foto + botón */}
-      <div className="flex flex-col items-center gap-6 bg-zinc-50 rounded-2xl p-6 sm:p-10 border-2 border-zinc-100">
+      <div className="flex flex-col items-center gap-6 bg-white rounded-2xl p-6 sm:p-10 border-2 border-zinc-100 shadow-sm">
 
         <Avatar nombre={nombre || email || "?"} avatarUrl={avatarUrl} size={110} />
 
@@ -139,6 +141,7 @@ export default function PerfilPage() {
           {mensaje.texto}
         </p>
       )}
+      </div>
 
     </div>
   );

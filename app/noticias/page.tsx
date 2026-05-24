@@ -77,15 +77,15 @@ export default async function NoticiasPage() {
   const news = await fetchMotoGPNews();
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-8 max-w-3xl mx-auto w-full gap-8">
+    <div className="flex flex-col flex-1 max-w-3xl mx-auto w-full">
 
-      <div>
-        <span className="text-xs font-bold uppercase tracking-widest text-red-600">
-          Actualidad
-        </span>
-        <h1 className="text-3xl font-black text-black mt-1">Noticias y Podcast</h1>
+      <div className="bg-black text-white px-4 py-8 sm:px-6">
+        <span className="text-red-500 text-xs font-black uppercase tracking-[0.25em]">Actualidad</span>
+        <h1 className="text-3xl sm:text-4xl font-black mt-1">Noticias y Podcast</h1>
+        <p className="text-zinc-500 text-sm mt-1">Noticias en tiempo real · Podcast de la porra</p>
       </div>
 
+      <div className="px-4 sm:px-6 py-6 flex flex-col gap-8">
       {/* ── Podcasts ── */}
       {podcasts && podcasts.length > 0 && (
         <section className="flex flex-col gap-4">
@@ -159,6 +159,7 @@ export default async function NoticiasPage() {
           Noticias actualizadas automáticamente · Google News MotoGP
         </p>
       </section>
+      </div>
 
     </div>
   );

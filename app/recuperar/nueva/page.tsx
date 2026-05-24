@@ -38,15 +38,20 @@ export default function NuevaContrasenaPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4 py-16">
+    <div className="flex flex-1 items-center justify-center px-4 py-16 bg-zinc-50">
       <div className="w-full max-w-sm flex flex-col gap-6">
 
         <div className="text-center">
+          <div className="inline-flex items-center gap-1 mb-4">
+            <span className="text-red-500 text-2xl font-black tracking-tighter">PORRA</span>
+            <span className="text-zinc-400 text-2xl font-black">/</span>
+            <span className="text-black text-2xl font-black tracking-tighter">MOTOGP</span>
+          </div>
           <h1 className="text-3xl font-black text-black">Nueva contraseña</h1>
           <p className="text-zinc-400 text-sm mt-1">Elige una contraseña nueva para tu cuenta.</p>
         </div>
 
-        <form onSubmit={guardar} className="flex flex-col gap-4">
+        <form onSubmit={guardar} className="flex flex-col gap-4 bg-white rounded-2xl p-6 shadow-sm border border-zinc-100">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-black">Nueva contraseña</label>
             <input

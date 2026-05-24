@@ -35,17 +35,20 @@ export default async function HistorialPage() {
 
   if (pasados.length === 0) {
     return (
-      <div className="flex flex-col flex-1 px-4 py-10 max-w-3xl mx-auto w-full gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-black">Historial de GPs</h1>
-          <p className="text-zinc-400 text-sm mt-1">Temporada 2026</p>
+      <div className="flex flex-col flex-1 max-w-3xl mx-auto w-full">
+        <div className="bg-black text-white px-4 py-8 sm:px-6">
+          <span className="text-red-500 text-xs font-black uppercase tracking-[0.25em]">Temporada 2026</span>
+          <h1 className="text-3xl sm:text-4xl font-black mt-1">Historial de GPs</h1>
+          <p className="text-zinc-500 text-sm mt-1">Los resultados aparecerán aquí</p>
         </div>
-        <div className="border-2 border-dashed border-zinc-200 rounded-2xl px-6 py-16 text-center text-zinc-400 flex flex-col items-center gap-3">
-          <span className="text-5xl">🏁</span>
-          <p className="font-bold text-black">Aún no hay GPs completados</p>
-          <p className="text-sm">
-            El historial se irá llenando a medida que avance la temporada.
-          </p>
+        <div className="px-4 sm:px-6 py-10">
+          <div className="border-2 border-dashed border-zinc-200 rounded-2xl px-6 py-16 text-center text-zinc-400 flex flex-col items-center gap-3">
+            <span className="text-5xl">🏁</span>
+            <p className="font-bold text-black">Aún no hay GPs completados</p>
+            <p className="text-sm">
+              El historial se irá llenando a medida que avance la temporada.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -61,15 +64,17 @@ export default async function HistorialPage() {
   ]);
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-8 max-w-3xl mx-auto w-full gap-4">
+    <div className="flex flex-col flex-1 max-w-3xl mx-auto w-full">
 
-      <div>
-        <h1 className="text-3xl font-black text-black">Historial de GPs</h1>
-        <p className="text-zinc-400 text-sm mt-1">
-          Temporada 2026 · {pasados.length} GP{pasados.length !== 1 ? "s" : ""} disputados
+      <div className="bg-black text-white px-4 py-8 sm:px-6">
+        <span className="text-red-500 text-xs font-black uppercase tracking-[0.25em]">Temporada 2026</span>
+        <h1 className="text-3xl sm:text-4xl font-black mt-1">Historial de GPs</h1>
+        <p className="text-zinc-500 text-sm mt-1">
+          {pasados.length} GP{pasados.length !== 1 ? "s" : ""} disputados
         </p>
       </div>
 
+      <div className="px-4 sm:px-6 py-6 flex flex-col gap-3">
       {pasados.map((gp) => {
         const res = (resultados ?? []).find(
           (r) => r.carrera_id === gp.id
@@ -223,6 +228,7 @@ export default async function HistorialPage() {
           </details>
         );
       })}
+      </div>
     </div>
   );
 }

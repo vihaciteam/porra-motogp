@@ -225,17 +225,16 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="flex flex-col flex-1 px-4 py-10 max-w-2xl mx-auto w-full gap-10">
+    <div className="flex flex-col flex-1 max-w-2xl mx-auto w-full">
 
-      {/* Cabecera */}
-      <div>
-        <span className="text-xs font-bold uppercase tracking-widest text-red-600">
-          Panel de administrador
-        </span>
-        <h1 className="text-3xl font-black text-black mt-1">{GP.nombre}</h1>
-        <p className="text-zinc-400 text-sm">{GP.circuito}</p>
+      {/* Cabecera oscura */}
+      <div className="bg-black text-white px-4 py-8 sm:px-6">
+        <span className="text-red-500 text-xs font-black uppercase tracking-[0.25em]">Panel de Administrador</span>
+        <h1 className="text-3xl font-black mt-1">{GP.nombre}</h1>
+        <p className="text-zinc-500 text-sm mt-1">{GP.circuito}</p>
       </div>
 
+      <div className="px-4 sm:px-6 py-6 flex flex-col gap-8">
       {/* ══ HORARIOS DE CIERRE ══ */}
       <form onSubmit={guardarHorarios} className="flex flex-col gap-5 p-6 bg-zinc-50 rounded-2xl border-2 border-zinc-100">
         <h2 className="text-lg font-black text-black">⏰ Horarios de cierre de votación</h2>
@@ -432,6 +431,7 @@ export default function AdminPage() {
             ))}
           </div>
         )}
+      </div>
       </div>
 
     </div>

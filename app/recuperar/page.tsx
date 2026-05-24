@@ -31,34 +31,46 @@ export default function RecuperarPage() {
 
   if (enviado) {
     return (
-      <div className="flex flex-1 items-center justify-center px-4 py-16">
+      <div className="flex flex-1 items-center justify-center px-4 py-16 bg-zinc-50">
         <div className="w-full max-w-sm flex flex-col gap-6 text-center">
-          <div className="text-5xl">📧</div>
-          <h1 className="text-2xl font-black text-black">Revisa tu correo</h1>
-          <p className="text-zinc-400 text-sm">
-            Te hemos enviado un enlace a <strong>{email}</strong> para restablecer tu contraseña.
-            Puede tardar unos minutos.
-          </p>
-          <Link href="/login" className="text-sm text-zinc-400 hover:text-black transition-colors">
-            ← Volver al login
-          </Link>
+          <div className="inline-flex items-center gap-1 justify-center">
+            <span className="text-red-500 text-2xl font-black tracking-tighter">PORRA</span>
+            <span className="text-zinc-400 text-2xl font-black">/</span>
+            <span className="text-black text-2xl font-black tracking-tighter">MOTOGP</span>
+          </div>
+          <div className="bg-white rounded-2xl p-8 shadow-sm border border-zinc-100 flex flex-col items-center gap-4">
+            <div className="text-5xl">📧</div>
+            <h1 className="text-2xl font-black text-black">Revisa tu correo</h1>
+            <p className="text-zinc-400 text-sm">
+              Te hemos enviado un enlace a <strong>{email}</strong> para restablecer tu contraseña.
+              Puede tardar unos minutos.
+            </p>
+            <Link href="/login" className="text-sm text-zinc-400 hover:text-black transition-colors">
+              ← Volver al login
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4 py-16">
+    <div className="flex flex-1 items-center justify-center px-4 py-16 bg-zinc-50">
       <div className="w-full max-w-sm flex flex-col gap-6">
 
         <div className="text-center">
+          <div className="inline-flex items-center gap-1 mb-4">
+            <span className="text-red-500 text-2xl font-black tracking-tighter">PORRA</span>
+            <span className="text-zinc-400 text-2xl font-black">/</span>
+            <span className="text-black text-2xl font-black tracking-tighter">MOTOGP</span>
+          </div>
           <h1 className="text-3xl font-black text-black">¿Olvidaste tu contraseña?</h1>
           <p className="text-zinc-400 text-sm mt-1">
             Escribe tu email y te mandamos un enlace para cambiarla.
           </p>
         </div>
 
-        <form onSubmit={enviarEmail} className="flex flex-col gap-4">
+        <form onSubmit={enviarEmail} className="flex flex-col gap-4 bg-white rounded-2xl p-6 shadow-sm border border-zinc-100">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-black">Email</label>
             <input
@@ -80,7 +92,7 @@ export default function RecuperarPage() {
           <button
             type="submit"
             disabled={cargando}
-            className="bg-black hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold py-3 rounded-full transition-colors mt-2"
+            className="bg-red-600 hover:bg-red-700 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold py-3 rounded-full transition-colors mt-2"
           >
             {cargando ? "Enviando..." : "Enviar enlace"}
           </button>
