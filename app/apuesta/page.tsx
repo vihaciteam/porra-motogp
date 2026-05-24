@@ -108,7 +108,7 @@ export default function ApuestaPage() {
           .maybeSingle(),
         supabase
           .from("cierres")
-          .select("cierre_sabado, cierre_domingo")
+          .select("cierre_pole, cierre_sabado, cierre_domingo")
           .eq("carrera_id", GP.id)
           .maybeSingle(),
       ]);
