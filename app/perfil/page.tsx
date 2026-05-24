@@ -100,7 +100,7 @@ export default function PerfilPage() {
       </div>
 
       {/* Foto + botón */}
-      <div className="flex flex-col items-center gap-6 bg-zinc-50 rounded-2xl p-10 border-2 border-zinc-100">
+      <div className="flex flex-col items-center gap-6 bg-zinc-50 rounded-2xl p-6 sm:p-10 border-2 border-zinc-100">
 
         <Avatar nombre={nombre || email || "?"} avatarUrl={avatarUrl} size={110} />
 
