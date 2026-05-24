@@ -18,6 +18,10 @@ export default function LoginPage() {
     if (searchParams.get("error")) {
       setError("El enlace ha expirado o no es válido. Vuelve a intentarlo.");
     }
+    // Si ya hay sesión activa, redirigir directamente
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.replace("/apuesta");
+    });
   }, [searchParams]);
 
   async function iniciarSesion(e: React.FormEvent) {
@@ -31,8 +35,7 @@ export default function LoginPage() {
       setError("Email o contraseña incorrectos. Comprueba tus datos.");
       setCargando(false);
     } else {
-      router.push("/apuesta");
-      router.refresh();
+      window.location.href = "/apuesta";
     }
   }
 
