@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
@@ -10,8 +10,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
-  const router = useRouter();
-  const supabase = createClient();
+  const router      = useRouter();
+  const searchParams = useSearchParams();
+  const supabase    = createClient();
+
+  useEffect(() => {
+    if (searchParams.get("error")) {
+      setError("El enlace ha expirado o no es válido. Vuelve a intentarlo.");
+    }
+  }, [searchParams]);
 
   async function iniciarSesion(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +83,13 @@ export default function LoginPage() {
           >
             {cargando ? "Entrando..." : "Iniciar sesión"}
           </button>
+
+          <Link
+            href="/recuperar"
+            className="text-center text-sm text-zinc-400 hover:text-black transition-colors"
+          >
+            ¿Has olvidado tu contraseña?
+          </Link>
         </form>
 
         <p className="text-center text-sm text-zinc-400">
