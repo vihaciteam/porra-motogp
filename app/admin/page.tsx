@@ -61,6 +61,7 @@ export default function AdminPage() {
   const [cargando, setCargando] = useState(true);
 
   // ── Horarios ──
+  const [cierrePole,    setCierrePole]    = useState("");
   const [cierreSabado,  setCierreSabado]  = useState("");
   const [cierreDomingo, setCierreDomingo] = useState("");
   const [guardandoHorario, setGuardandoHorario] = useState(false);
@@ -105,6 +106,7 @@ export default function AdminPage() {
         setPodcasts(podcastsData ?? []);
 
         if (cierres) {
+          setCierrePole(toLocal(cierres.cierre_pole));
           setCierreSabado(toLocal(cierres.cierre_sabado));
           setCierreDomingo(toLocal(cierres.cierre_domingo));
         }
@@ -158,10 +160,11 @@ export default function AdminPage() {
 
     const { error } = await supabase.from("cierres").upsert(
       {
-        carrera_id:    GP.id,
+        carrera_id:     GP.id,
+        cierre_pole:    fromLocal(cierrePole),
         cierre_sabado:  fromLocal(cierreSabado),
         cierre_domingo: fromLocal(cierreDomingo),
-        updated_at:    new Date().toISOString(),
+        updated_at:     new Date().toISOString(),
       },
       { onConflict: "carrera_id" }
     );
@@ -240,10 +243,22 @@ export default function AdminPage() {
           La votación cierra 1 hora antes de cada carrera. Los votos se revelan 1 minuto después del cierre.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-bold text-black">
-              🏁 Cierre sábado (pole + sprint)
+              🏁 Cierre pole (fin Q1)
+            </label>
+            <p className="text-xs text-zinc-400">{formatFecha(GP.fechaSprint)} · 15 min antes de Q2</p>
+            <input
+              type="datetime-local"
+              value={cierrePole}
+              onChange={(e) => setCierrePole(e.target.value)}
+              className="border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-black transition-colors bg-white"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-bold text-black">
+              ⚡ Cierre sprint
             </label>
             <p className="text-xs text-zinc-400">{formatFecha(GP.fechaSprint)}</p>
             <input
@@ -255,7 +270,7 @@ export default function AdminPage() {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-bold text-black">
-              🏎️ Cierre domingo (carrera + especiales)
+              🏎️ Cierre carrera
             </label>
             <p className="text-xs text-zinc-400">{formatFecha(GP.fechaCarrera)}</p>
             <input

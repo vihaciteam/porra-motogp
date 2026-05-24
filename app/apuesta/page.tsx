@@ -84,6 +84,7 @@ export default function ApuestaPage() {
   const [moto3Winner, setMoto3Winner] = useState("");
   const [moto2Winner, setMoto2Winner] = useState("");
   // Horarios de cierre
+  const [cierrePole,    setCierrePole]    = useState<string | null>(null);
   const [cierreSabado,  setCierreSabado]  = useState<string | null>(null);
   const [cierreDomingo, setCierreDomingo] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -125,6 +126,7 @@ export default function ApuestaPage() {
         setMoto2Winner(apuesta.moto2_winner ?? "");
       }
       if (cierres) {
+        setCierrePole(cierres.cierre_pole ?? null);
         setCierreSabado(cierres.cierre_sabado ?? null);
         setCierreDomingo(cierres.cierre_domingo ?? null);
       }
@@ -134,9 +136,10 @@ export default function ApuestaPage() {
   }, []);
 
   // Calculado en cada render → siempre actualizado
-  const sabadoAbierto  = jornadaAbierta(cierreSabado);
+  const poleAbierta    = jornadaAbierta(cierrePole);
+  const sprintAbierto  = jornadaAbierta(cierreSabado);
   const domingoAbierto = jornadaAbierta(cierreDomingo);
-  const todoCerrado    = !sabadoAbierto && !domingoAbierto;
+  const todoCerrado    = !poleAbierta && !sprintAbierto && !domingoAbierto;
 
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
@@ -242,20 +245,20 @@ export default function ApuestaPage() {
         </div>
       )}
 
-      {/* ── SÁBADO ── */}
+      {/* ── POLE ── */}
       <section className="flex flex-col gap-5">
         <div className="flex items-center gap-3">
           <div className="h-px flex-1 bg-zinc-200" />
           <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
-            Sábado · {formatFecha(GP.fechaSprint)}
+            Pole · {formatFecha(GP.fechaSprint)}
           </span>
-          <BadgeEstado abierto={sabadoAbierto} />
+          <BadgeEstado abierto={poleAbierta} />
           <div className="h-px flex-1 bg-zinc-200" />
         </div>
 
-        {!sabadoAbierto && (
+        {!poleAbierta && (
           <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
-            🔒 La votación del sábado (pole y sprint) ya está cerrada.
+            🔒 La votación de pole ya está cerrada.
           </p>
         )}
 
@@ -264,8 +267,26 @@ export default function ApuestaPage() {
           pts={PUNTOS.sabado.pole}
           value={pole}
           onChange={setPole}
-          disabled={!sabadoAbierto}
+          disabled={!poleAbierta}
         />
+      </section>
+
+      {/* ── SPRINT ── */}
+      <section className="flex flex-col gap-5">
+        <div className="flex items-center gap-3">
+          <div className="h-px flex-1 bg-zinc-200" />
+          <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
+            Sprint · {formatFecha(GP.fechaSprint)}
+          </span>
+          <BadgeEstado abierto={sprintAbierto} />
+          <div className="h-px flex-1 bg-zinc-200" />
+        </div>
+
+        {!sprintAbierto && (
+          <p className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
+            🔒 La votación del sprint ya está cerrada.
+          </p>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <PilotoSelect
@@ -274,7 +295,7 @@ export default function ApuestaPage() {
             value={sprintP1}
             onChange={setSprintP1}
             excluir={[sprintP2, sprintP3]}
-            disabled={!sabadoAbierto}
+            disabled={!sprintAbierto}
           />
           <PilotoSelect
             label="🥈 Sprint P2"
@@ -282,7 +303,7 @@ export default function ApuestaPage() {
             value={sprintP2}
             onChange={setSprintP2}
             excluir={[sprintP1, sprintP3]}
-            disabled={!sabadoAbierto}
+            disabled={!sprintAbierto}
           />
           <PilotoSelect
             label="🥉 Sprint P3"
@@ -290,7 +311,7 @@ export default function ApuestaPage() {
             value={sprintP3}
             onChange={setSprintP3}
             excluir={[sprintP1, sprintP2]}
-            disabled={!sabadoAbierto}
+            disabled={!sprintAbierto}
           />
         </div>
       </section>
