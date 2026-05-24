@@ -14,6 +14,53 @@ function formatFecha(iso: string) {
   });
 }
 
+/** Contador regresivo hasta el cierre */
+function useCountdown(cierre: string | null): { texto: string | null; urgente: boolean } {
+  const [estado, setEstado] = useState<{ texto: string | null; urgente: boolean }>({ texto: null, urgente: false });
+
+  useEffect(() => {
+    if (!cierre) return;
+
+    const actualizar = () => {
+      const diff = new Date(cierre).getTime() - Date.now();
+      if (diff <= 0) { setEstado({ texto: null, urgente: false }); return; }
+
+      const dias  = Math.floor(diff / 86400000);
+      const horas = Math.floor((diff % 86400000) / 3600000);
+      const mins  = Math.floor((diff % 3600000) / 60000);
+      const segs  = Math.floor((diff % 60000) / 1000);
+
+      const urgente = diff < 3600000; // menos de 1 hora
+      let texto: string;
+      if (dias > 0)        texto = `${dias}d ${horas}h ${mins}m`;
+      else if (horas > 0)  texto = `${horas}h ${mins}m ${segs}s`;
+      else                 texto = `${mins}m ${segs}s`;
+
+      setEstado({ texto, urgente });
+    };
+
+    actualizar();
+    const id = setInterval(actualizar, 1000);
+    return () => clearInterval(id);
+  }, [cierre]);
+
+  return estado;
+}
+
+function Contador({ cierre }: { cierre: string | null }) {
+  const { texto, urgente } = useCountdown(cierre);
+  if (!texto) return null;
+  return (
+    <span className={`text-xs font-bold tabular-nums px-2.5 py-0.5 rounded-full ${
+      urgente
+        ? "bg-red-100 text-red-600 animate-pulse"
+        : "bg-zinc-100 text-zinc-500"
+    }`}>
+      ⏱ {texto}
+    </span>
+  );
+}
+
 /** Dropdown reutilizable para elegir un piloto */
 function PilotoSelect({
   label, pts, value, onChange, excluir = [], disabled = false,
@@ -247,12 +294,13 @@ export default function ApuestaPage() {
 
       {/* ── POLE ── */}
       <section className="flex flex-col gap-5">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="h-px flex-1 bg-zinc-200" />
           <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
             Pole · {formatFecha(GP.fechaSprint)}
           </span>
           <BadgeEstado abierto={poleAbierta} />
+          {poleAbierta && <Contador cierre={cierrePole} />}
           <div className="h-px flex-1 bg-zinc-200" />
         </div>
 
@@ -273,12 +321,13 @@ export default function ApuestaPage() {
 
       {/* ── SPRINT ── */}
       <section className="flex flex-col gap-5">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="h-px flex-1 bg-zinc-200" />
           <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
             Sprint · {formatFecha(GP.fechaSprint)}
           </span>
           <BadgeEstado abierto={sprintAbierto} />
+          {sprintAbierto && <Contador cierre={cierreSabado} />}
           <div className="h-px flex-1 bg-zinc-200" />
         </div>
 
@@ -318,12 +367,13 @@ export default function ApuestaPage() {
 
       {/* ── DOMINGO ── */}
       <section className="flex flex-col gap-5">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="h-px flex-1 bg-zinc-200" />
           <span className="text-xs font-black uppercase tracking-widest text-zinc-500">
             Domingo · {formatFecha(GP.fechaCarrera)}
           </span>
           <BadgeEstado abierto={domingoAbierto} />
+          {domingoAbierto && <Contador cierre={cierreDomingo} />}
           <div className="h-px flex-1 bg-zinc-200" />
         </div>
 
