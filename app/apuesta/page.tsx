@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { PILOTOS } from "@/lib/pilotos";
+import { PILOTOS, nombrePiloto } from "@/lib/pilotos";
 import { gpActual } from "@/lib/calendario";
 import { PUNTOS, jornadaAbierta } from "@/lib/puntuacion";
 
@@ -205,6 +205,32 @@ export default function ApuestaPage() {
           </span>
         )}
       </div>
+
+      {/* ── RESUMEN DE TU APUESTA GUARDADA ── */}
+      {(pole || sprintP1 || sprintP2 || sprintP3 || carreraP1 || carreraP2 || carreraP3 || vueltaRapida || moto3Winner || moto2Winner) && (
+        <div className="bg-zinc-50 border-2 border-zinc-100 rounded-2xl px-5 py-4 flex flex-col gap-3">
+          <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">
+            {todoCerrado ? "Tu apuesta final" : "Tu apuesta guardada"}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {pole        && <span className="text-xs bg-white border border-zinc-200 rounded-lg px-2.5 py-1 font-medium">🏁 {nombrePiloto(pole)}</span>}
+            {sprintP1    && <span className="text-xs bg-white border border-zinc-200 rounded-lg px-2.5 py-1 font-medium">S🥇 {nombrePiloto(sprintP1)}</span>}
+            {sprintP2    && <span className="text-xs bg-white border border-zinc-200 rounded-lg px-2.5 py-1 font-medium">S🥈 {nombrePiloto(sprintP2)}</span>}
+            {sprintP3    && <span className="text-xs bg-white border border-zinc-200 rounded-lg px-2.5 py-1 font-medium">S🥉 {nombrePiloto(sprintP3)}</span>}
+            {carreraP1   && <span className="text-xs bg-white border border-zinc-200 rounded-lg px-2.5 py-1 font-medium">C🥇 {nombrePiloto(carreraP1)}</span>}
+            {carreraP2   && <span className="text-xs bg-white border border-zinc-200 rounded-lg px-2.5 py-1 font-medium">C🥈 {nombrePiloto(carreraP2)}</span>}
+            {carreraP3   && <span className="text-xs bg-white border border-zinc-200 rounded-lg px-2.5 py-1 font-medium">C🥉 {nombrePiloto(carreraP3)}</span>}
+            {vueltaRapida && <span className="text-xs bg-white border border-zinc-200 rounded-lg px-2.5 py-1 font-medium">⚡ {nombrePiloto(vueltaRapida)}</span>}
+            {moto3Winner && <span className="text-xs bg-red-50 border border-red-200 rounded-lg px-2.5 py-1 font-medium text-red-700">Moto3: {moto3Winner}</span>}
+            {moto2Winner && <span className="text-xs bg-red-50 border border-red-200 rounded-lg px-2.5 py-1 font-medium text-red-700">Moto2: {moto2Winner}</span>}
+          </div>
+          {!todoCerrado && (
+            <p className="text-xs text-zinc-400">
+              Puedes modificar los campos abiertos y volver a guardar.
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Banner si todo está cerrado */}
       {todoCerrado && (
