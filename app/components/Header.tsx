@@ -25,10 +25,13 @@ export default function Header({ email }: Props) {
       </Link>
       <nav className="flex gap-6 text-sm text-zinc-400 items-center">
         <Link href="/apuesta" className="hover:text-white transition-colors">
-          Hacer apuesta
+          Apuesta
+        </Link>
+        <Link href="/general" className="hover:text-white transition-colors">
+          General
         </Link>
         <Link href="/clasificacion" className="hover:text-white transition-colors">
-          Clasificación
+          GP actual
         </Link>
         {email ? (
           <>
