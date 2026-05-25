@@ -1,6 +1,6 @@
 {
-  "name": "Porra MotoGP",
-  "short_name": "PorraMGP",
+  "name": "Podium MotoGP 2026",
+  "short_name": "Podium MGP",
   "description": "La porra de MotoGP para jugar con amigos",
   "start_url": "/",
   "display": "standalone",

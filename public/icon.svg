@@ -1,6 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="80" fill="#000"/>
-  <text x="256" y="220" font-family="Arial Black,Arial" font-weight="900" font-size="110" fill="#dc2626" text-anchor="middle" letter-spacing="-2">PORRA</text>
-  <text x="248" y="270" font-family="Arial Black,Arial" font-weight="900" font-size="60" fill="#52525b" text-anchor="middle">/</text>
-  <text x="256" y="370" font-family="Arial Black,Arial" font-weight="900" font-size="90" fill="#ffffff" text-anchor="middle" letter-spacing="-2">MOTOGP</text>
+  <!-- Fondo negro -->
+  <rect width="512" height="512" rx="90" fill="#000"/>
+
+  <!-- Franja roja superior decorativa -->
+  <rect x="0" y="0" width="512" height="8" rx="4" fill="#dc2626"/>
+
+  <!-- Podio (3 bloques) -->
+  <rect x="156" y="300" width="80" height="70" rx="6" fill="#dc2626"/>
+  <rect x="216" y="260" width="80" height="110" rx="6" fill="#ffffff"/>
+  <rect x="276" y="320" width="80" height="50" rx="6" fill="#71717a"/>
+
+  <!-- Números del podio -->
+  <text x="196" y="348" font-family="Arial Black,Arial" font-weight="900" font-size="32" fill="#fff" text-anchor="middle">2</text>
+  <text x="256" y="328" font-family="Arial Black,Arial" font-weight="900" font-size="36" fill="#000" text-anchor="middle">1</text>
+  <text x="316" y="358" font-family="Arial Black,Arial" font-weight="900" font-size="28" fill="#fff" text-anchor="middle">3</text>
+
+  <!-- Texto PODIUM -->
+  <text x="256" y="200" font-family="Arial Black,Arial" font-weight="900" font-size="108" fill="#dc2626" text-anchor="middle" letter-spacing="-3">PODIUM</text>
+
+  <!-- Texto MOTOGP 2026 -->
+  <text x="256" y="460" font-family="Arial Black,Arial" font-weight="900" font-size="52" fill="#ffffff" text-anchor="middle" letter-spacing="1">MOTOGP <tspan fill="#dc2626">2026</tspan></text>
 </svg>

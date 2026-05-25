@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black",
-    title: "Porra MotoGP",
+    title: "Podium MotoGP 2026",
   },
   icons: {
     icon: "/icon.svg",
