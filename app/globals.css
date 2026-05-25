@@ -31,3 +31,24 @@ body {
     font-size: 16px !important;
   }
 }
+
+/* Safe area para iOS (notch + home indicator) */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* En móvil, el body necesita espacio para bottom nav + home indicator */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 639px) {
+    body {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom)) !important;
+    }
+  }
+}
+
+/* Feedback táctil en botones y links */
+@media (hover: none) {
+  button:active, a:active {
+    opacity: 0.7;
+  }
+}
