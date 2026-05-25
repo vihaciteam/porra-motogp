@@ -34,6 +34,8 @@ export default async function GeneralPage() {
 
   for (const res of resultados ?? []) {
     const gpConfig = CALENDARIO.find((gp) => gp.id === res.carrera_id);
+    // Saltar GPs históricos: sus puntos ya están en historial_puntos
+    if (gpConfig?.esHistorico) continue;
     const votacionEspecial = gpConfig?.votacionEspecial ?? false;
 
     const gpApuestas = (apuestas ?? []).filter(

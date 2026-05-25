@@ -10,6 +10,76 @@ import type { GranPremio } from "./tipos";
  * Deja el valor null mientras no sepas la hora exacta.
  */
 export const CALENDARIO: GranPremio[] = [
+  // ── GPs HISTÓRICOS (antes de la app) ─────────────────────────────────────
+  // Sus puntos ya están en historial_puntos; esHistorico:true los excluye
+  // del cálculo de puntos_app en la clasificación general.
+  {
+    id: "tailandia-2026",
+    nombre: "GP de Tailandia",
+    circuito: "Chang International Circuit",
+    fechaSprint:  "2026-03-01",
+    fechaCarrera: "2026-03-02",
+    votacionEspecial: false,
+    esHistorico: true,
+    cierreSabado:  null,
+    cierreDomingo: null,
+  },
+  {
+    id: "brasil-2026",
+    nombre: "GP de Brasil",
+    circuito: "Autódromo Internacional de Goiânia",
+    fechaSprint:  "2026-03-15",
+    fechaCarrera: "2026-03-16",
+    votacionEspecial: true,
+    esHistorico: true,
+    cierreSabado:  null,
+    cierreDomingo: null,
+  },
+  {
+    id: "usa-2026",
+    nombre: "GP de las Américas",
+    circuito: "Circuit of the Americas",
+    fechaSprint:  "2026-04-12",
+    fechaCarrera: "2026-04-13",
+    votacionEspecial: false,
+    esHistorico: true,
+    cierreSabado:  null,
+    cierreDomingo: null,
+  },
+  {
+    id: "espana-2026",
+    nombre: "GP de España",
+    circuito: "Circuito de Jerez",
+    fechaSprint:  "2026-04-26",
+    fechaCarrera: "2026-04-27",
+    votacionEspecial: false,
+    esHistorico: true,
+    cierreSabado:  null,
+    cierreDomingo: null,
+  },
+  {
+    id: "francia-2026",
+    nombre: "GP de Francia",
+    circuito: "Circuit Bugatti (Le Mans)",
+    fechaSprint:  "2026-05-10",
+    fechaCarrera: "2026-05-11",
+    votacionEspecial: false,
+    esHistorico: true,
+    cierreSabado:  null,
+    cierreDomingo: null,
+  },
+  {
+    id: "cataluna-2026",
+    nombre: "GP de Cataluña",
+    circuito: "Circuit de Barcelona-Catalunya",
+    fechaSprint:  "2026-05-17",
+    fechaCarrera: "2026-05-18",
+    votacionEspecial: true,
+    esHistorico: true,
+    cierreSabado:  null,
+    cierreDomingo: null,
+  },
+  // ── GPs EN LA APP ─────────────────────────────────────────────────────────
   {
     id: "italia-2026",
     nombre: "GP de Italia",

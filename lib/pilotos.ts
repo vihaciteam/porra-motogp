@@ -19,6 +19,9 @@ export const PILOTOS: Piloto[] = [
   { numero: 41, nombre: "Aleix Espargaró",       equipo: "LCR Honda" },
   { numero:  5, nombre: "Johann Zarco",          equipo: "LCR Honda" },
   { numero: 43, nombre: "Jack Miller",           equipo: "Pramac Yamaha" },
+  { numero: 25, nombre: "Raúl Fernández",        equipo: "Trackhouse Aprilia" },
+  { numero: 79, nombre: "Ai Ogura",              equipo: "LCR Honda" },
+  { numero: 37, nombre: "Fermín Aldeguer",       equipo: "Gresini Ducati" },
 ];
 
 /** Devuelve el nombre del piloto dado su número de dorsal. */
