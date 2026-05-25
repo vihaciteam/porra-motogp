@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const COLORES = [
   "bg-red-500",    "bg-orange-500", "bg-amber-600",
@@ -36,6 +36,11 @@ export function Avatar({
 
   // Prioridad: foto subida por el usuario → foto local admin → iniciales
   const src = avatarUrl ?? `/avatars/${slugify(nombre)}.jpg`;
+
+  // Resetear el error cuando cambia la URL (ej. al subir una foto nueva)
+  useEffect(() => {
+    setError(false);
+  }, [src]);
 
   if (!error) {
     return (

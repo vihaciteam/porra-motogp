@@ -10,8 +10,10 @@ export default function PerfilPage() {
   const [email,  setEmail]      = useState<string | null>(null);
   const [nombre, setNombre]     = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [nombreEdit, setNombreEdit] = useState("");
   const [cargando,  setCargando]  = useState(true);
   const [subiendo,  setSubiendo]  = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<{ texto: string; ok: boolean } | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -34,6 +36,7 @@ export default function PerfilPage() {
 
       if (perfil) {
         setNombre(perfil.nombre ?? "");
+        setNombreEdit(perfil.nombre ?? "");
         setAvatarUrl(perfil.avatar_url ?? null);
       }
       setCargando(false);
@@ -45,18 +48,21 @@ export default function PerfilPage() {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setMensaje({ texto: "La foto no puede superar 2 MB.", ok: false });
+    if (file.size > 5 * 1024 * 1024) {
+      setMensaje({ texto: "La foto no puede superar 5 MB.", ok: false });
       return;
     }
 
     setSubiendo(true);
     setMensaje(null);
 
-    // Subir a Supabase Storage (sobreescribe si ya existe)
+    // Ruta única por cada subida → la URL cambia siempre, sin problemas de caché
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `${userId}/${Date.now()}.${ext}`;
+
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(userId, file, { upsert: true, cacheControl: "3600" });
+      .upload(path, file, { cacheControl: "31536000" });
 
     if (uploadError) {
       setMensaje({ texto: "Error al subir la foto. Inténtalo de nuevo.", ok: false });
@@ -64,27 +70,59 @@ export default function PerfilPage() {
       return;
     }
 
-    // Obtener URL pública con timestamp para evitar caché
+    // URL pública (ya es única porque la ruta incluye el timestamp)
     const { data: { publicUrl } } = supabase.storage
       .from("avatars")
-      .getPublicUrl(userId);
-
-    const urlFinal = `${publicUrl}?t=${Date.now()}`;
+      .getPublicUrl(path);
 
     // Guardar URL en el perfil
     const { error: updateError } = await supabase
       .from("perfiles")
-      .update({ avatar_url: urlFinal })
+      .update({ avatar_url: publicUrl })
       .eq("id", userId);
 
     if (updateError) {
       setMensaje({ texto: "Foto subida, pero no se pudo guardar. Inténtalo de nuevo.", ok: false });
     } else {
-      setAvatarUrl(urlFinal);
+      setAvatarUrl(publicUrl);
       setMensaje({ texto: "✅ Foto actualizada correctamente.", ok: true });
+      // Resetear input para poder volver a seleccionar la misma foto si hace falta
+      if (fileRef.current) fileRef.current.value = "";
     }
 
     setSubiendo(false);
+  }
+
+  async function guardarNombre(e: React.FormEvent) {
+    e.preventDefault();
+    if (!userId) return;
+
+    const nombreLimpio = nombreEdit.trim();
+    if (!nombreLimpio) {
+      setMensaje({ texto: "El nombre no puede estar vacío.", ok: false });
+      return;
+    }
+    if (nombreLimpio === nombre) {
+      setMensaje({ texto: "El nombre no ha cambiado.", ok: false });
+      return;
+    }
+
+    setGuardando(true);
+    setMensaje(null);
+
+    const { error } = await supabase
+      .from("perfiles")
+      .update({ nombre: nombreLimpio })
+      .eq("id", userId);
+
+    if (error) {
+      setMensaje({ texto: "No se pudo guardar el nombre. Inténtalo de nuevo.", ok: false });
+    } else {
+      setNombre(nombreLimpio);
+      setMensaje({ texto: "✅ Nombre actualizado correctamente.", ok: true });
+    }
+
+    setGuardando(false);
   }
 
   if (cargando) return (
@@ -129,8 +167,35 @@ export default function PerfilPage() {
           {subiendo ? "Subiendo…" : avatarUrl ? "Cambiar foto" : "Subir foto"}
         </button>
 
-        <p className="text-xs text-zinc-400">JPG, PNG o WebP · Máximo 2 MB</p>
+        <p className="text-xs text-zinc-400">JPG, PNG o WebP · Máximo 5 MB</p>
       </div>
+
+      {/* Cambiar nombre */}
+      <form
+        onSubmit={guardarNombre}
+        className="bg-white rounded-2xl p-6 border-2 border-zinc-100 shadow-sm flex flex-col gap-4"
+      >
+        <div>
+          <label className="block text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">
+            Nombre en la clasificación
+          </label>
+          <input
+            type="text"
+            value={nombreEdit}
+            onChange={e => setNombreEdit(e.target.value)}
+            maxLength={30}
+            placeholder="Tu nombre o alias"
+            className="w-full border-2 border-zinc-200 rounded-xl px-4 py-3 text-base font-bold text-black focus:outline-none focus:border-black transition-colors"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={guardando || nombreEdit.trim() === nombre}
+          className="bg-black hover:bg-zinc-800 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold px-6 py-2.5 rounded-full transition-colors self-end"
+        >
+          {guardando ? "Guardando…" : "Guardar nombre"}
+        </button>
+      </form>
 
       {mensaje && (
         <p className={`text-sm rounded-lg px-4 py-3 border ${
