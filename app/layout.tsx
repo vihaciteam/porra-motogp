@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Porra MotoGP",
+  title: "Podium MotoGP 2026",
   description: "La porra de MotoGP para jugar con amigos",
   manifest: "/manifest.json",
   appleWebApp: {
