@@ -19,4 +19,5 @@ export interface Piloto {
   numero: number;
   nombre: string;
   equipo: string;
+  marca: "Ducati" | "KTM" | "Aprilia" | "Yamaha" | "Honda";
 }

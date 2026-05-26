@@ -1,30 +1,45 @@
 import type { Piloto } from "./tipos";
 
 export const PILOTOS: Piloto[] = [
-  { numero:  1, nombre: "Francesco Bagnaia",    equipo: "Ducati Lenovo" },
-  { numero: 93, nombre: "Marc Márquez",          equipo: "Ducati Lenovo" },
-  { numero: 89, nombre: "Jorge Martín",          equipo: "Aprilia Racing" },
-  { numero: 73, nombre: "Álex Márquez",          equipo: "Gresini Racing" },
-  { numero: 49, nombre: "Fabio Di Giannantonio", equipo: "VR46 Racing" },
-  { numero: 21, nombre: "Franco Morbidelli",     equipo: "Pramac Yamaha" },
-  { numero: 23, nombre: "Enea Bastianini",        equipo: "KTM Factory" },
-  { numero: 33, nombre: "Brad Binder",           equipo: "KTM Factory" },
-  { numero: 31, nombre: "Pedro Acosta",          equipo: "KTM GasGas Tech3" },
-  { numero: 12, nombre: "Maverick Viñales",      equipo: "KTM GasGas Tech3" },
-  { numero: 72, nombre: "Marco Bezzecchi",       equipo: "Aprilia Trackhouse" },
-  { numero: 20, nombre: "Fabio Quartararo",      equipo: "Monster Yamaha" },
-  { numero: 42, nombre: "Álex Rins",             equipo: "Monster Yamaha" },
-  { numero: 10, nombre: "Luca Marini",           equipo: "Repsol Honda" },
-  { numero: 36, nombre: "Joan Mir",              equipo: "Repsol Honda" },
-  { numero: 41, nombre: "Aleix Espargaró",       equipo: "LCR Honda" },
-  { numero:  5, nombre: "Johann Zarco",          equipo: "LCR Honda" },
-  { numero: 43, nombre: "Jack Miller",           equipo: "Pramac Yamaha" },
-  { numero: 25, nombre: "Raúl Fernández",        equipo: "Trackhouse Aprilia" },
-  { numero: 79, nombre: "Ai Ogura",              equipo: "LCR Honda" },
-  { numero: 37, nombre: "Fermín Aldeguer",       equipo: "Gresini Ducati" },
+  // ── DUCATI ────────────────────────────────────────────────────────────────
+  { numero: 93, nombre: "Marc Márquez",            equipo: "Ducati Lenovo Team",          marca: "Ducati" },
+  { numero: 63, nombre: "Francesco Bagnaia",       equipo: "Ducati Lenovo Team",          marca: "Ducati" },
+  { numero: 73, nombre: "Álex Márquez",            equipo: "Gresini Racing",              marca: "Ducati" },
+  { numero: 54, nombre: "Fermín Aldeguer",         equipo: "Gresini Racing",              marca: "Ducati" },
+  { numero: 49, nombre: "Fabio Di Giannantonio",   equipo: "VR46 Racing Team",            marca: "Ducati" },
+  { numero: 21, nombre: "Franco Morbidelli",       equipo: "VR46 Racing Team",            marca: "Ducati" },
+
+  // ── KTM ───────────────────────────────────────────────────────────────────
+  { numero: 37, nombre: "Pedro Acosta",            equipo: "Red Bull KTM Factory Racing", marca: "KTM" },
+  { numero: 33, nombre: "Brad Binder",             equipo: "Red Bull KTM Factory Racing", marca: "KTM" },
+  { numero: 12, nombre: "Maverick Viñales",        equipo: "Red Bull KTM Tech3",          marca: "KTM" },
+  { numero: 23, nombre: "Enea Bastianini",         equipo: "Red Bull KTM Tech3",          marca: "KTM" },
+
+  // ── APRILIA ───────────────────────────────────────────────────────────────
+  { numero:  1, nombre: "Jorge Martín",            equipo: "Aprilia Racing",              marca: "Aprilia" },
+  { numero: 72, nombre: "Marco Bezzecchi",         equipo: "Aprilia Racing",              marca: "Aprilia" },
+  { numero: 25, nombre: "Raúl Fernández",          equipo: "Trackhouse Racing",           marca: "Aprilia" },
+  { numero: 79, nombre: "Ai Ogura",               equipo: "Trackhouse Racing",           marca: "Aprilia" },
+
+  // ── YAMAHA ────────────────────────────────────────────────────────────────
+  { numero: 20, nombre: "Fabio Quartararo",        equipo: "Monster Energy Yamaha",       marca: "Yamaha" },
+  { numero: 42, nombre: "Álex Rins",               equipo: "Monster Energy Yamaha",       marca: "Yamaha" },
+  { numero:  7, nombre: "Toprak Razgatlioglu",     equipo: "Prima Pramac Yamaha",         marca: "Yamaha" },
+  { numero: 43, nombre: "Jack Miller",             equipo: "Prima Pramac Yamaha",         marca: "Yamaha" },
+
+  // ── HONDA ─────────────────────────────────────────────────────────────────
+  { numero: 10, nombre: "Luca Marini",             equipo: "Honda HRC",                   marca: "Honda" },
+  { numero: 36, nombre: "Joan Mir",                equipo: "Honda HRC",                   marca: "Honda" },
+  { numero:  5, nombre: "Johann Zarco",            equipo: "LCR Honda",                   marca: "Honda" },
+  { numero: 84, nombre: "Diogo Moreira",           equipo: "LCR Honda",                   marca: "Honda" },
 ];
 
 /** Devuelve el nombre del piloto dado su número de dorsal. */
 export function nombrePiloto(numero: number): string {
   return PILOTOS.find((p) => p.numero === numero)?.nombre ?? `#${numero}`;
+}
+
+/** Devuelve todos los pilotos de una marca concreta. */
+export function pilotosPorMarca(marca: Piloto["marca"]): Piloto[] {
+  return PILOTOS.filter((p) => p.marca === marca);
 }
