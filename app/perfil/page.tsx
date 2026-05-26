@@ -56,13 +56,11 @@ export default function PerfilPage() {
     setSubiendo(true);
     setMensaje(null);
 
-    // Ruta única por cada subida → la URL cambia siempre, sin problemas de caché
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `${userId}/${Date.now()}.${ext}`;
-
+    // Sobreescribe siempre el mismo archivo (userId) → compatible con las
+    // políticas del bucket. cacheControl "0" evita que el CDN lo cachee.
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(path, file, { cacheControl: "31536000" });
+      .upload(userId, file, { upsert: true, cacheControl: "0" });
 
     if (uploadError) {
       setMensaje({ texto: "Error al subir la foto. Inténtalo de nuevo.", ok: false });
@@ -70,21 +68,23 @@ export default function PerfilPage() {
       return;
     }
 
-    // URL pública (ya es única porque la ruta incluye el timestamp)
+    // Añadimos ?t= para que el navegador no use su caché local
     const { data: { publicUrl } } = supabase.storage
       .from("avatars")
-      .getPublicUrl(path);
+      .getPublicUrl(userId);
+
+    const urlFinal = `${publicUrl}?t=${Date.now()}`;
 
     // Guardar URL en el perfil
     const { error: updateError } = await supabase
       .from("perfiles")
-      .update({ avatar_url: publicUrl })
+      .update({ avatar_url: urlFinal })
       .eq("id", userId);
 
     if (updateError) {
       setMensaje({ texto: "Foto subida, pero no se pudo guardar. Inténtalo de nuevo.", ok: false });
     } else {
-      setAvatarUrl(publicUrl);
+      setAvatarUrl(urlFinal);
       setMensaje({ texto: "✅ Foto actualizada correctamente.", ok: true });
       // Resetear input para poder volver a seleccionar la misma foto si hace falta
       if (fileRef.current) fileRef.current.value = "";
