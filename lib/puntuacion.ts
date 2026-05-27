@@ -6,7 +6,7 @@ export const PUNTOS = {
   sabado: {
     pole:    1,
     sprint1: 12,
-    sprint2:  9,
+    sprint2: 10,
     sprint3:  7,
   },
   domingo: {
@@ -22,10 +22,10 @@ export const PUNTOS = {
   },
 } as const;
 
-export const MAX_PUNTOS_SABADO   =  29; // 1+12+9+7
+export const MAX_PUNTOS_SABADO   =  30; // 1+12+10+7
 export const MAX_PUNTOS_DOMINGO  =  62; // 25+20+16+1
-export const MAX_PUNTOS_NORMAL   =  91; // GP sin votación especial
-export const MAX_PUNTOS_ESPECIAL = 111; // GP con Moto3+Moto2
+export const MAX_PUNTOS_NORMAL   =  92; // GP sin votación especial
+export const MAX_PUNTOS_ESPECIAL = 112; // GP con Moto3+Moto2
 
 /** Todos los campos de una apuesta o un resultado */
 export interface RegistroGP {
