@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { nombrePiloto } from "@/lib/pilotos";
-import { calcularPuntos, type RegistroGP } from "@/lib/puntuacion";
+import { calcularPuntos, PUNTOS, type RegistroGP } from "@/lib/puntuacion";
 import { CALENDARIO } from "@/lib/calendario";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -13,16 +13,20 @@ function formatFecha(iso: string) {
 }
 
 function Chip({
-  label, valor, acierto,
+  label, valor, acierto, pts,
 }: {
-  label: string; valor: string | null; acierto?: boolean;
+  label: string; valor: string | null; acierto?: boolean; pts?: number;
 }) {
   if (!valor) return null;
   return (
-    <span className={`text-xs rounded-lg px-2 py-0.5 font-medium ${
+    <span className={`text-xs rounded-lg px-2 py-0.5 font-medium inline-flex items-center gap-1 ${
       acierto ? "bg-green-100 text-green-800" : "bg-zinc-100 text-zinc-500"
     }`}>
+      {acierto && <span>✅</span>}
       {label}: {valor}
+      {acierto && pts !== undefined && (
+        <span className="font-black">+{pts}pts</span>
+      )}
     </span>
   );
 }
@@ -196,27 +200,37 @@ export default async function HistorialPage() {
                       {/* Chips de picks */}
                       <div className="flex flex-wrap gap-1.5 pl-7">
                         <Chip label="🏁" valor={j.apuesta.pole ? nombrePiloto(j.apuesta.pole) : null}
-                          acierto={!!res && j.apuesta.pole === res.pole} />
+                          acierto={!!res && j.apuesta.pole === res.pole}
+                          pts={PUNTOS.sabado.pole} />
                         <Chip label="S🥇" valor={j.apuesta.sprint_p1 ? nombrePiloto(j.apuesta.sprint_p1) : null}
-                          acierto={!!res && j.apuesta.sprint_p1 === res.sprint_p1} />
+                          acierto={!!res && j.apuesta.sprint_p1 === res.sprint_p1}
+                          pts={PUNTOS.sabado.sprint1} />
                         <Chip label="S🥈" valor={j.apuesta.sprint_p2 ? nombrePiloto(j.apuesta.sprint_p2) : null}
-                          acierto={!!res && j.apuesta.sprint_p2 === res.sprint_p2} />
+                          acierto={!!res && j.apuesta.sprint_p2 === res.sprint_p2}
+                          pts={PUNTOS.sabado.sprint2} />
                         <Chip label="S🥉" valor={j.apuesta.sprint_p3 ? nombrePiloto(j.apuesta.sprint_p3) : null}
-                          acierto={!!res && j.apuesta.sprint_p3 === res.sprint_p3} />
+                          acierto={!!res && j.apuesta.sprint_p3 === res.sprint_p3}
+                          pts={PUNTOS.sabado.sprint3} />
                         <Chip label="C🥇" valor={j.apuesta.carrera_p1 ? nombrePiloto(j.apuesta.carrera_p1) : null}
-                          acierto={!!res && j.apuesta.carrera_p1 === res.carrera_p1} />
+                          acierto={!!res && j.apuesta.carrera_p1 === res.carrera_p1}
+                          pts={PUNTOS.domingo.carrera1} />
                         <Chip label="C🥈" valor={j.apuesta.carrera_p2 ? nombrePiloto(j.apuesta.carrera_p2) : null}
-                          acierto={!!res && j.apuesta.carrera_p2 === res.carrera_p2} />
+                          acierto={!!res && j.apuesta.carrera_p2 === res.carrera_p2}
+                          pts={PUNTOS.domingo.carrera2} />
                         <Chip label="C🥉" valor={j.apuesta.carrera_p3 ? nombrePiloto(j.apuesta.carrera_p3) : null}
-                          acierto={!!res && j.apuesta.carrera_p3 === res.carrera_p3} />
+                          acierto={!!res && j.apuesta.carrera_p3 === res.carrera_p3}
+                          pts={PUNTOS.domingo.carrera3} />
                         <Chip label="⚡" valor={j.apuesta.vuelta_rapida ? nombrePiloto(j.apuesta.vuelta_rapida) : null}
-                          acierto={!!res && j.apuesta.vuelta_rapida === res.vuelta_rapida} />
+                          acierto={!!res && j.apuesta.vuelta_rapida === res.vuelta_rapida}
+                          pts={PUNTOS.domingo.vueltaRapida} />
                         {gp.votacionEspecial && (
                           <>
                             <Chip label="Moto3" valor={j.apuesta.moto3_winner}
-                              acierto={!!res && j.apuesta.moto3_winner === res.moto3_winner} />
+                              acierto={!!res && j.apuesta.moto3_winner === res.moto3_winner}
+                              pts={PUNTOS.especial.moto3} />
                             <Chip label="Moto2" valor={j.apuesta.moto2_winner}
-                              acierto={!!res && j.apuesta.moto2_winner === res.moto2_winner} />
+                              acierto={!!res && j.apuesta.moto2_winner === res.moto2_winner}
+                              pts={PUNTOS.especial.moto2} />
                           </>
                         )}
                       </div>
