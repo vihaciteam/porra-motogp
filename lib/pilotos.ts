@@ -16,10 +16,10 @@ export const PILOTOS: Piloto[] = [
   { numero: 23, nombre: "Enea Bastianini",         equipo: "Red Bull KTM Tech3",          marca: "KTM" },
 
   // ── APRILIA ───────────────────────────────────────────────────────────────
-  { numero:  1, nombre: "Jorge Martín",            equipo: "Aprilia Racing",              marca: "Aprilia" },
+  { numero: 89, nombre: "Jorge Martín",            equipo: "Aprilia Racing",              marca: "Aprilia" },
   { numero: 72, nombre: "Marco Bezzecchi",         equipo: "Aprilia Racing",              marca: "Aprilia" },
   { numero: 25, nombre: "Raúl Fernández",          equipo: "Trackhouse Racing",           marca: "Aprilia" },
-  { numero: 79, nombre: "Ai Ogura",               equipo: "Trackhouse Racing",           marca: "Aprilia" },
+  { numero: 79, nombre: "Ai Ogura",                equipo: "Trackhouse Racing",           marca: "Aprilia" },
 
   // ── YAMAHA ────────────────────────────────────────────────────────────────
   { numero: 20, nombre: "Fabio Quartararo",        equipo: "Monster Energy Yamaha",       marca: "Yamaha" },
@@ -31,7 +31,7 @@ export const PILOTOS: Piloto[] = [
   { numero: 10, nombre: "Luca Marini",             equipo: "Honda HRC",                   marca: "Honda" },
   { numero: 36, nombre: "Joan Mir",                equipo: "Honda HRC",                   marca: "Honda" },
   { numero:  5, nombre: "Johann Zarco",            equipo: "LCR Honda",                   marca: "Honda" },
-  { numero: 84, nombre: "Diogo Moreira",           equipo: "LCR Honda",                   marca: "Honda" },
+  { numero: 11, nombre: "Diogo Moreira",           equipo: "LCR Honda",                   marca: "Honda" },
 ];
 
 /** Devuelve el nombre del piloto dado su número de dorsal. */
