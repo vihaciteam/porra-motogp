@@ -44,7 +44,6 @@ export default function Header({ email }: Props) {
             { href: "/historial",      label: "Historial" },
             { href: "/general",        label: "General" },
             { href: "/clasificacion",  label: "GP actual" },
-            { href: "/estadisticas",   label: "Estadísticas" },
             { href: "/noticias",       label: "Noticias" },
             { href: "/reglas",         label: "Normas" },
           ].map(({ href, label }) => (
@@ -99,7 +98,6 @@ export default function Header({ email }: Props) {
             { href: "/historial",      label: "Historial",    icon: "🏁" },
             { href: "/general",        label: "General",      icon: "📊" },
             { href: "/clasificacion",  label: "GP actual",    icon: "🏎️" },
-            { href: "/estadisticas",   label: "Estadísticas", icon: "📈" },
             { href: "/noticias",       label: "Noticias",     icon: "📰" },
             { href: "/reglas",         label: "Normas",       icon: "📋" },
           ].map(({ href, label, icon }) => (
