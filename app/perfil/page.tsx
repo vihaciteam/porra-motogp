@@ -4,6 +4,19 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { Avatar } from "@/app/components/Avatar";
+import { calcularPuntos, type RegistroGP } from "@/lib/puntuacion";
+import { CALENDARIO } from "@/lib/calendario";
+
+interface StatsPersonales {
+  totalHistorico: number;
+  totalApp:       number;
+  total:          number;
+  gpsApp:         number;
+  media:          number;
+  aciertos:       number;
+  mejorGP:        number;
+  mejorGPNombre:  string | null;
+}
 
 export default function PerfilPage() {
   const [userId, setUserId]     = useState<string | null>(null);
@@ -15,6 +28,7 @@ export default function PerfilPage() {
   const [subiendo,  setSubiendo]  = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<{ texto: string; ok: boolean } | null>(null);
+  const [stats, setStats] = useState<StatsPersonales | null>(null);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
@@ -43,6 +57,71 @@ export default function PerfilPage() {
     }
     cargar();
   }, []);
+
+  // Cargar estadísticas personales una vez que tengamos el userId
+  useEffect(() => {
+    if (!userId) return;
+    async function cargarStats() {
+      const [
+        { data: historial },
+        { data: misApuestas },
+        { data: resultados },
+      ] = await Promise.all([
+        supabase.from("historial_puntos").select("puntos").eq("user_id", userId),
+        supabase.from("apuestas").select("*").eq("user_id", userId),
+        supabase.from("resultados").select("*"),
+      ]);
+
+      const totalHistorico = (historial ?? []).reduce((s, h) => s + (h.puntos ?? 0), 0);
+
+      let appPts = 0;
+      let gpsApp = 0;
+      let aciertos = 0;
+      let mejorGP = 0;
+      let mejorGPNombre: string | null = null;
+
+      for (const res of resultados ?? []) {
+        const gpConfig = CALENDARIO.find((gp) => gp.id === res.carrera_id);
+        if (gpConfig?.esHistorico) continue;
+
+        const apuesta = (misApuestas ?? []).find((a) => a.carrera_id === res.carrera_id);
+        if (!apuesta) continue;
+
+        gpsApp++;
+        const pts = calcularPuntos(apuesta as RegistroGP, res as RegistroGP, gpConfig?.votacionEspecial ?? false);
+        appPts += pts;
+
+        const campos: (keyof RegistroGP)[] = [
+          "pole","sprint_p1","sprint_p2","sprint_p3",
+          "carrera_p1","carrera_p2","carrera_p3","vuelta_rapida",
+        ];
+        for (const campo of campos) {
+          if (apuesta[campo] && apuesta[campo] === res[campo]) aciertos++;
+        }
+        if (gpConfig?.votacionEspecial) {
+          if (apuesta.moto3_winner && apuesta.moto3_winner === res.moto3_winner) aciertos++;
+          if (apuesta.moto2_winner && apuesta.moto2_winner === res.moto2_winner) aciertos++;
+        }
+
+        if (pts > mejorGP) {
+          mejorGP = pts;
+          mejorGPNombre = gpConfig?.nombre ?? null;
+        }
+      }
+
+      setStats({
+        totalHistorico,
+        totalApp: appPts,
+        total:    totalHistorico + appPts,
+        gpsApp,
+        media:    gpsApp > 0 ? Math.round(appPts / gpsApp) : 0,
+        aciertos,
+        mejorGP,
+        mejorGPNombre,
+      });
+    }
+    cargarStats();
+  }, [userId]);
 
   async function subirFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -205,6 +284,55 @@ export default function PerfilPage() {
         }`}>
           {mensaje.texto}
         </p>
+      )}
+
+      {/* Estadísticas personales */}
+      {stats && (
+        <div className="bg-white rounded-2xl p-6 border-2 border-zinc-100 shadow-sm flex flex-col gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-zinc-400">Mis estadísticas</p>
+            <p className="text-[11px] text-zinc-400 mt-0.5">Solo tú puedes ver esto</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-zinc-900 text-white rounded-2xl p-4 text-center col-span-2">
+              <p className="text-3xl font-black tabular-nums">{stats.total}</p>
+              <p className="text-xs text-zinc-400 mt-1">puntos totales</p>
+              {stats.totalHistorico > 0 && (
+                <p className="text-[10px] text-zinc-500 mt-0.5">
+                  {stats.totalHistorico} histórico · {stats.totalApp} en app
+                </p>
+              )}
+            </div>
+
+            <div className="bg-red-50 rounded-2xl p-4 text-center">
+              <p className="text-2xl font-black tabular-nums text-red-600">
+                {stats.gpsApp > 0 ? stats.media : "—"}
+              </p>
+              <p className="text-xs text-zinc-500 mt-1">media pts/GP</p>
+            </div>
+
+            <div className="bg-zinc-50 rounded-2xl p-4 text-center">
+              <p className="text-2xl font-black tabular-nums text-black">{stats.aciertos}</p>
+              <p className="text-xs text-zinc-500 mt-1">aciertos</p>
+            </div>
+
+            {stats.mejorGP > 0 && (
+              <div className="bg-zinc-50 rounded-2xl p-4 text-center col-span-2">
+                <p className="text-2xl font-black tabular-nums text-black">{stats.mejorGP} pts</p>
+                <p className="text-xs text-zinc-500 mt-1">
+                  mejor GP{stats.mejorGPNombre ? ` · ${stats.mejorGPNombre}` : ""}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {stats.gpsApp === 0 && (
+            <p className="text-xs text-zinc-400 text-center">
+              Las estadísticas aparecerán cuando juegues tu primer GP en la app.
+            </p>
+          )}
+        </div>
       )}
       </div>
 
