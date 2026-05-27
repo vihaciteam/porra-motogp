@@ -8,10 +8,10 @@ type Props = {
 };
 
 const links = [
-  { href: "/apuesta",  label: "Apostar",  icon: "🗳️"  },
-  { href: "/general",  label: "General",  icon: "📊"  },
-  { href: "/noticias", label: "Noticias", icon: "📰"  },
-  { href: "/historial",label: "Historial",icon: "🏁"  },
+  { href: "/apuesta",      label: "Apostar",  icon: "🗳️" },
+  { href: "/general",      label: "General",  icon: "📊" },
+  { href: "/estadisticas", label: "Stats",    icon: "📈" },
+  { href: "/historial",    label: "Historial",icon: "🏁" },
 ];
 
 export default function BottomNav({ email }: Props) {

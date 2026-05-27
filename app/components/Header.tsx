@@ -40,11 +40,12 @@ export default function Header({ email }: Props) {
         {/* Desktop nav */}
         <nav className="hidden md:flex gap-1 text-sm text-zinc-400 items-center">
           {[
-            { href: "/apuesta",       label: "Mi apuesta" },
-            { href: "/noticias",      label: "Noticias" },
-            { href: "/historial",     label: "Historial" },
-            { href: "/general",       label: "General" },
-            { href: "/clasificacion", label: "GP actual" },
+            { href: "/apuesta",        label: "Mi apuesta" },
+            { href: "/historial",      label: "Historial" },
+            { href: "/general",        label: "General" },
+            { href: "/clasificacion",  label: "GP actual" },
+            { href: "/estadisticas",   label: "Estadísticas" },
+            { href: "/reglas",         label: "Normas" },
           ].map(({ href, label }) => (
             <Link key={href} href={href}
               className="px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white transition-colors">
@@ -93,11 +94,12 @@ export default function Header({ email }: Props) {
       {menuAbierto && (
         <nav className="md:hidden bg-zinc-950 border-t border-zinc-800 flex flex-col py-2">
           {[
-            { href: "/apuesta",        label: "Mi apuesta",   icon: "🗳️" },
-            { href: "/noticias",       label: "Noticias",     icon: "📰" },
+            { href: "/apuesta",        label: "Mi apuesta",    icon: "🗳️" },
             { href: "/historial",      label: "Historial",    icon: "🏁" },
             { href: "/general",        label: "General",      icon: "📊" },
             { href: "/clasificacion",  label: "GP actual",    icon: "🏎️" },
+            { href: "/estadisticas",   label: "Estadísticas", icon: "📈" },
+            { href: "/reglas",         label: "Normas",       icon: "📋" },
           ].map(({ href, label, icon }) => (
             <Link key={href} href={href} onClick={cerrar}
               className="flex items-center gap-3 px-5 py-3.5 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">
