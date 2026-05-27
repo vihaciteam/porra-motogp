@@ -58,11 +58,7 @@ export default function ReglasPage() {
         {/* 3. Participación */}
         <Seccion num={3} titulo="Participación">
           <p>La participación en la porra es de <strong className="text-black">pago único de 40 €</strong> entre los participantes.</p>
-          <p>Para participar será necesario realizar una transferencia bancaria a la siguiente cuenta:</p>
-          <div className="bg-zinc-50 border-2 border-zinc-200 rounded-xl px-4 py-3 mt-1">
-            <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mb-1">IBAN</p>
-            <p className="font-black text-black tracking-wider text-base">ES68 1583 0001 1190 0451 4822</p>
-          </div>
+          <p>Para participar será necesario realizar una transferencia bancaria a la cuenta indicada por la organización.</p>
         </Seccion>
 
         {/* 4. Envío de respuestas */}
