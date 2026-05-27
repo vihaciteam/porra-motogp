@@ -72,25 +72,31 @@ export default function PerfilPage() {
         supabase.from("resultados").select("*"),
       ]);
 
+      // Puntos históricos oficiales (authoritative para el total)
       const totalHistorico = (historial ?? []).reduce((s, h) => s + (h.puntos ?? 0), 0);
 
-      let appPts = 0;
-      let gpsApp = 0;
+      let ptsHistoricoCalc = 0; // pts históricos calculados via apuestas (para separar del total)
+      let appPts = 0;           // pts de GPs de la app
+      let gpsTotal = 0;         // todos los GPs jugados (histórico + app)
       let aciertos = 0;
       let mejorGP = 0;
       let mejorGPNombre: string | null = null;
 
       for (const res of resultados ?? []) {
         const gpConfig = CALENDARIO.find((gp) => gp.id === res.carrera_id);
-        if (gpConfig?.esHistorico) continue;
-
-        const apuesta = (misApuestas ?? []).find((a) => a.carrera_id === res.carrera_id);
+        const apuesta  = (misApuestas ?? []).find((a) => a.carrera_id === res.carrera_id);
         if (!apuesta) continue;
 
-        gpsApp++;
+        gpsTotal++;
         const pts = calcularPuntos(apuesta as RegistroGP, res as RegistroGP, gpConfig?.votacionEspecial ?? false);
-        appPts += pts;
 
+        if (gpConfig?.esHistorico) {
+          ptsHistoricoCalc += pts;
+        } else {
+          appPts += pts;
+        }
+
+        // Aciertos campo a campo (histórico + app)
         const campos: (keyof RegistroGP)[] = [
           "pole","sprint_p1","sprint_p2","sprint_p3",
           "carrera_p1","carrera_p2","carrera_p3","vuelta_rapida",
@@ -109,12 +115,17 @@ export default function PerfilPage() {
         }
       }
 
+      // Total oficial: historial_puntos (autoridad) + pts calculados de la app
+      const total = totalHistorico + appPts;
+      // Media: total oficial / todos los GPs jugados
+      const media = gpsTotal > 0 ? Math.round(total / gpsTotal) : 0;
+
       setStats({
         totalHistorico,
         totalApp: appPts,
-        total:    totalHistorico + appPts,
-        gpsApp,
-        media:    gpsApp > 0 ? Math.round(appPts / gpsApp) : 0,
+        total,
+        gpsApp:  gpsTotal,
+        media,
         aciertos,
         mejorGP,
         mejorGPNombre,
@@ -327,9 +338,14 @@ export default function PerfilPage() {
             )}
           </div>
 
+          {stats.gpsApp > 0 && (
+            <p className="text-xs text-zinc-400 text-center">
+              Media calculada sobre {stats.gpsApp} GP{stats.gpsApp !== 1 ? "s" : ""} jugados
+            </p>
+          )}
           {stats.gpsApp === 0 && (
             <p className="text-xs text-zinc-400 text-center">
-              Las estadísticas aparecerán cuando juegues tu primer GP en la app.
+              Las estadísticas aparecerán cuando se registren tus resultados.
             </p>
           )}
         </div>
