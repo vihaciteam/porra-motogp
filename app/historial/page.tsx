@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { nombrePiloto } from "@/lib/pilotos";
-import { calcularPuntos, PUNTOS, type RegistroGP } from "@/lib/puntuacion";
+import { calcularPuntos, PUNTOS, votosRevelados, type RegistroGP } from "@/lib/puntuacion";
 import { CALENDARIO } from "@/lib/calendario";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -61,10 +61,11 @@ export default async function HistorialPage() {
   const supabase = await createClient();
   const carreraIds = pasados.map((gp) => gp.id);
 
-  const [{ data: resultados }, { data: apuestas }, { data: perfiles }] = await Promise.all([
+  const [{ data: resultados }, { data: apuestas }, { data: perfiles }, { data: cierres }] = await Promise.all([
     supabase.from("resultados").select("*").in("carrera_id", carreraIds),
     supabase.from("apuestas").select("*").in("carrera_id", carreraIds),
     supabase.from("perfiles").select("id, nombre, avatar_url"),
+    supabase.from("cierres").select("carrera_id, cierre_domingo").in("carrera_id", carreraIds),
   ]);
 
   return (
@@ -83,6 +84,9 @@ export default async function HistorialPage() {
         const res = (resultados ?? []).find(
           (r) => r.carrera_id === gp.id
         ) as RegistroGP | undefined;
+
+        const cierre    = (cierres ?? []).find((c) => c.carrera_id === gp.id);
+        const revelados = votosRevelados(cierre?.cierre_domingo ?? null);
 
         const gpApuestas = (apuestas ?? []).filter(
           (a) => a.carrera_id === gp.id
@@ -166,7 +170,15 @@ export default async function HistorialPage() {
               )}
 
               {/* Apuestas de los jugadores */}
-              {jugadores.length === 0 ? (
+              {!revelados ? (
+                <div className="border-2 border-dashed border-zinc-200 rounded-xl px-4 py-6 text-center flex flex-col items-center gap-2">
+                  <span className="text-3xl">🔒</span>
+                  <p className="font-bold text-black text-sm">Votos ocultos</p>
+                  <p className="text-xs text-zinc-400">
+                    Las apuestas se revelan 1 minuto después del cierre de la votación.
+                  </p>
+                </div>
+              ) : jugadores.length === 0 ? (
                 <p className="text-zinc-400 text-sm text-center py-3">
                   Sin apuestas registradas para este GP.
                 </p>
