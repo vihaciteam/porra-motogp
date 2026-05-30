@@ -35,12 +35,14 @@ export default async function ClasificacionPage() {
     supabase.from("apuestas").select("user_id, pole, sprint_p1, sprint_p2, sprint_p3, carrera_p1, carrera_p2, carrera_p3, vuelta_rapida, moto3_winner, moto2_winner").eq("carrera_id", GP.id),
     supabase.from("resultados").select("pole, sprint_p1, sprint_p2, sprint_p3, carrera_p1, carrera_p2, carrera_p3, vuelta_rapida, moto3_winner, moto2_winner").eq("carrera_id", GP.id).maybeSingle(),
     supabase.from("perfiles").select("id, nombre, avatar_url"),
-    supabase.from("cierres").select("cierre_sabado, cierre_domingo").eq("carrera_id", GP.id).maybeSingle(),
+    supabase.from("cierres").select("cierre_pole, cierre_sabado, cierre_domingo").eq("carrera_id", GP.id).maybeSingle(),
   ]);
 
-  // Los picks se ocultan hasta 1 min después del cierre del sábado.
-  // Si no hay horarios configurados, los picks permanecen ocultos.
-  const revelados = votosRevelados(cierreData?.cierre_sabado ?? null);
+  // Revelación progresiva: cada sección se desvela 1 min después de su cierre.
+  const poleRevelada    = votosRevelados(cierreData?.cierre_pole    ?? null);
+  const sprintRevelado  = votosRevelados(cierreData?.cierre_sabado  ?? null);
+  const domingoRevelado = votosRevelados(cierreData?.cierre_domingo ?? null);
+  const algunRevelado   = poleRevelada || sprintRevelado || domingoRevelado;
 
   const res = resultado as RegistroGP | null;
 
@@ -104,15 +106,19 @@ export default async function ClasificacionPage() {
       </div>
 
       {/* Tabla de jugadores */}
-      {!revelados ? (
+      {!algunRevelado ? (
+        /* Nada revelado aún → candado completo */
         <div className="border-2 border-dashed border-zinc-200 rounded-2xl px-6 py-14 text-center flex flex-col items-center gap-3">
           <span className="text-5xl">🔒</span>
           <p className="font-bold text-black text-lg">Picks ocultos</p>
           <p className="text-sm text-zinc-400">
-            Las apuestas se revelan 1 minuto después del cierre de la votación del sábado.
+            Las apuestas se revelan progresivamente: pole tras el cierre del viernes/sábado,
+            sprint tras el cierre del sábado y carrera tras el cierre del domingo.
           </p>
           <p className="text-xs text-zinc-400 mt-1">
-            {jugadores.length > 0 ? `${jugadores.length} participante${jugadores.length !== 1 ? "s" : ""} han apostado` : "Aún no hay apuestas"}
+            {jugadores.length > 0
+              ? `${jugadores.length} participante${jugadores.length !== 1 ? "s" : ""} han apostado`
+              : "Aún no hay apuestas"}
           </p>
         </div>
       ) : jugadores.length === 0 ? (
@@ -141,18 +147,40 @@ export default async function ClasificacionPage() {
                 }
               </div>
 
-              {/* Detalle de picks */}
+              {/* Picks — revelación progresiva por sección */}
               <div className="flex flex-wrap gap-1.5 pl-11">
-                <Chip label="🏁" valor={j.apuesta.pole ? nombrePiloto(j.apuesta.pole) : null} acierto={!!res && j.apuesta.pole === res.pole} />
-                <Chip label="S🥇" valor={j.apuesta.sprint_p1 ? nombrePiloto(j.apuesta.sprint_p1) : null} acierto={!!res && j.apuesta.sprint_p1 === res.sprint_p1} />
-                <Chip label="S🥈" valor={j.apuesta.sprint_p2 ? nombrePiloto(j.apuesta.sprint_p2) : null} acierto={!!res && j.apuesta.sprint_p2 === res.sprint_p2} />
-                <Chip label="S🥉" valor={j.apuesta.sprint_p3 ? nombrePiloto(j.apuesta.sprint_p3) : null} acierto={!!res && j.apuesta.sprint_p3 === res.sprint_p3} />
-                <Chip label="C🥇" valor={j.apuesta.carrera_p1 ? nombrePiloto(j.apuesta.carrera_p1) : null} acierto={!!res && j.apuesta.carrera_p1 === res.carrera_p1} />
-                <Chip label="C🥈" valor={j.apuesta.carrera_p2 ? nombrePiloto(j.apuesta.carrera_p2) : null} acierto={!!res && j.apuesta.carrera_p2 === res.carrera_p2} />
-                <Chip label="C🥉" valor={j.apuesta.carrera_p3 ? nombrePiloto(j.apuesta.carrera_p3) : null} acierto={!!res && j.apuesta.carrera_p3 === res.carrera_p3} />
-                <Chip label="⚡" valor={j.apuesta.vuelta_rapida ? nombrePiloto(j.apuesta.vuelta_rapida) : null} acierto={!!res && j.apuesta.vuelta_rapida === res.vuelta_rapida} />
-                {GP.votacionEspecial && <Chip label="Moto3" valor={j.apuesta.moto3_winner} acierto={!!res && j.apuesta.moto3_winner === res.moto3_winner} />}
-                {GP.votacionEspecial && <Chip label="Moto2" valor={j.apuesta.moto2_winner} acierto={!!res && j.apuesta.moto2_winner === res.moto2_winner} />}
+
+                {/* Pole */}
+                {poleRevelada
+                  ? <Chip label="🏁" valor={j.apuesta.pole ? nombrePiloto(j.apuesta.pole) : null} acierto={!!res && j.apuesta.pole === res.pole} />
+                  : <span className="text-xs bg-zinc-50 text-zinc-300 rounded-lg px-2 py-1">🔒 Pole</span>
+                }
+
+                {/* Sprint */}
+                {sprintRevelado ? (
+                  <>
+                    <Chip label="S🥇" valor={j.apuesta.sprint_p1 ? nombrePiloto(j.apuesta.sprint_p1) : null} acierto={!!res && j.apuesta.sprint_p1 === res.sprint_p1} />
+                    <Chip label="S🥈" valor={j.apuesta.sprint_p2 ? nombrePiloto(j.apuesta.sprint_p2) : null} acierto={!!res && j.apuesta.sprint_p2 === res.sprint_p2} />
+                    <Chip label="S🥉" valor={j.apuesta.sprint_p3 ? nombrePiloto(j.apuesta.sprint_p3) : null} acierto={!!res && j.apuesta.sprint_p3 === res.sprint_p3} />
+                  </>
+                ) : (
+                  <span className="text-xs bg-zinc-50 text-zinc-300 rounded-lg px-2 py-1">🔒 Sprint</span>
+                )}
+
+                {/* Carrera + vuelta rápida + especiales */}
+                {domingoRevelado ? (
+                  <>
+                    <Chip label="C🥇" valor={j.apuesta.carrera_p1 ? nombrePiloto(j.apuesta.carrera_p1) : null} acierto={!!res && j.apuesta.carrera_p1 === res.carrera_p1} />
+                    <Chip label="C🥈" valor={j.apuesta.carrera_p2 ? nombrePiloto(j.apuesta.carrera_p2) : null} acierto={!!res && j.apuesta.carrera_p2 === res.carrera_p2} />
+                    <Chip label="C🥉" valor={j.apuesta.carrera_p3 ? nombrePiloto(j.apuesta.carrera_p3) : null} acierto={!!res && j.apuesta.carrera_p3 === res.carrera_p3} />
+                    <Chip label="⚡" valor={j.apuesta.vuelta_rapida ? nombrePiloto(j.apuesta.vuelta_rapida) : null} acierto={!!res && j.apuesta.vuelta_rapida === res.vuelta_rapida} />
+                    {GP.votacionEspecial && <Chip label="Moto3" valor={j.apuesta.moto3_winner} acierto={!!res && j.apuesta.moto3_winner === res.moto3_winner} />}
+                    {GP.votacionEspecial && <Chip label="Moto2" valor={j.apuesta.moto2_winner} acierto={!!res && j.apuesta.moto2_winner === res.moto2_winner} />}
+                  </>
+                ) : (
+                  <span className="text-xs bg-zinc-50 text-zinc-300 rounded-lg px-2 py-1">🔒 Carrera</span>
+                )}
+
               </div>
             </div>
           ))}
