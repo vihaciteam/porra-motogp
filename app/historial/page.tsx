@@ -85,8 +85,10 @@ export default async function HistorialPage() {
           (r) => r.carrera_id === gp.id
         ) as RegistroGP | undefined;
 
-        const cierre    = (cierres ?? []).find((c) => c.carrera_id === gp.id);
-        const revelados = votosRevelados(cierre?.cierre_domingo ?? null);
+        const cierre = (cierres ?? []).find((c) => c.carrera_id === gp.id);
+        // Sin entrada en cierres → GP histórico, siempre visible.
+        // Con entrada → oculto hasta 1 min después del cierre del domingo.
+        const revelados = !cierre || votosRevelados(cierre.cierre_domingo ?? null);
 
         const gpApuestas = (apuestas ?? []).filter(
           (a) => a.carrera_id === gp.id

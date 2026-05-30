@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { nombrePiloto } from "@/lib/pilotos";
-import { calcularPuntos, PUNTOS, type RegistroGP } from "@/lib/puntuacion";
+import { calcularPuntos, PUNTOS, votosRevelados, type RegistroGP } from "@/lib/puntuacion";
 import { gpActual } from "@/lib/calendario";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -31,11 +31,16 @@ export default async function ClasificacionPage() {
 
   const supabase = await createClient();
 
-  const [{ data: apuestas }, { data: resultado }, { data: perfiles }] = await Promise.all([
+  const [{ data: apuestas }, { data: resultado }, { data: perfiles }, { data: cierreData }] = await Promise.all([
     supabase.from("apuestas").select("user_id, pole, sprint_p1, sprint_p2, sprint_p3, carrera_p1, carrera_p2, carrera_p3, vuelta_rapida, moto3_winner, moto2_winner").eq("carrera_id", GP.id),
     supabase.from("resultados").select("pole, sprint_p1, sprint_p2, sprint_p3, carrera_p1, carrera_p2, carrera_p3, vuelta_rapida, moto3_winner, moto2_winner").eq("carrera_id", GP.id).maybeSingle(),
     supabase.from("perfiles").select("id, nombre, avatar_url"),
+    supabase.from("cierres").select("cierre_sabado, cierre_domingo").eq("carrera_id", GP.id).maybeSingle(),
   ]);
+
+  // Los picks se ocultan hasta 1 min después del cierre del sábado.
+  // Si no hay horarios configurados, los picks permanecen ocultos.
+  const revelados = votosRevelados(cierreData?.cierre_sabado ?? null);
 
   const res = resultado as RegistroGP | null;
 
@@ -99,7 +104,18 @@ export default async function ClasificacionPage() {
       </div>
 
       {/* Tabla de jugadores */}
-      {jugadores.length === 0 ? (
+      {!revelados ? (
+        <div className="border-2 border-dashed border-zinc-200 rounded-2xl px-6 py-14 text-center flex flex-col items-center gap-3">
+          <span className="text-5xl">🔒</span>
+          <p className="font-bold text-black text-lg">Picks ocultos</p>
+          <p className="text-sm text-zinc-400">
+            Las apuestas se revelan 1 minuto después del cierre de la votación del sábado.
+          </p>
+          <p className="text-xs text-zinc-400 mt-1">
+            {jugadores.length > 0 ? `${jugadores.length} participante${jugadores.length !== 1 ? "s" : ""} han apostado` : "Aún no hay apuestas"}
+          </p>
+        </div>
+      ) : jugadores.length === 0 ? (
         <p className="text-zinc-400 text-sm text-center py-8">
           Aún no hay apuestas para este GP.
         </p>
