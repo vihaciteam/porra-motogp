@@ -9,17 +9,25 @@ import { PUNTOS } from "@/lib/puntuacion";
 const ADMIN_EMAIL = "vihaciteam@gmail.com";
 const GP = gpActual();
 
-/* Convierte un timestamptz de la BD ("2026-09-19T13:00:00+00:00")
-   al formato que acepta <input type="datetime-local"> ("2026-09-19T13:00") */
+/* Convierte un timestamptz UTC de la BD al formato local que acepta
+   <input type="datetime-local">. Usa los métodos locales del navegador
+   para que el reloj muestre la hora española, no UTC. */
 function toLocal(iso: string | null): string {
   if (!iso) return "";
-  return iso.slice(0, 16);
+  const d = new Date(iso);
+  const yyyy = d.getFullYear();
+  const mm   = String(d.getMonth() + 1).padStart(2, "0");
+  const dd   = String(d.getDate()).padStart(2, "0");
+  const hh   = String(d.getHours()).padStart(2, "0");
+  const min  = String(d.getMinutes()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
 
-/* Convierte el valor de datetime-local a ISO con segundos */
+/* Interpreta el valor del input como hora LOCAL del navegador y lo
+   convierte a UTC ISO string para guardarlo correctamente en Supabase. */
 function fromLocal(value: string): string | null {
   if (!value) return null;
-  return value + ":00";
+  return new Date(value).toISOString();
 }
 
 function formatFecha(iso: string) {
