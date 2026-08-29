@@ -72,5 +72,22 @@ export async function guardarApuesta(
     .upsert(row, { onConflict: "user_id,carrera_id" });
 
   if (error) return { error: "Error al guardar. Inténtalo de nuevo." };
+
+  // Registrar en el log cada vez que se guarda
+  await supabase.from("apuestas_log").insert({
+    user_id:       user.id,
+    carrera_id:    GP.id,
+    pole:          poleAbierta    ? payload.pole          : undefined,
+    sprint_p1:     sprintAbierto  ? payload.sprint_p1     : undefined,
+    sprint_p2:     sprintAbierto  ? payload.sprint_p2     : undefined,
+    sprint_p3:     sprintAbierto  ? payload.sprint_p3     : undefined,
+    carrera_p1:    domingoAbierto ? payload.carrera_p1    : undefined,
+    carrera_p2:    domingoAbierto ? payload.carrera_p2    : undefined,
+    carrera_p3:    domingoAbierto ? payload.carrera_p3    : undefined,
+    vuelta_rapida: domingoAbierto ? payload.vuelta_rapida : undefined,
+    moto3_winner:  domingoAbierto ? payload.moto3_winner  : undefined,
+    moto2_winner:  domingoAbierto ? payload.moto2_winner  : undefined,
+  });
+
   return { ok: true };
 }
