@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 import { PILOTOS, nombrePiloto } from "@/lib/pilotos";
 import { gpActual } from "@/lib/calendario";
 import { PUNTOS, jornadaAbierta } from "@/lib/puntuacion";
+import { guardarApuesta } from "./actions";
 
 const GP = gpActual();
 
@@ -194,30 +195,22 @@ export default function ApuestaPage() {
     setGuardando(true);
     setMensaje(null);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { error } = await supabase.from("apuestas").upsert(
-      {
-        user_id:       user.id,
-        carrera_id:    GP.id,
-        pole,
-        sprint_p1:     sprintP1,
-        sprint_p2:     sprintP2,
-        sprint_p3:     sprintP3,
-        carrera_p1:    carreraP1,
-        carrera_p2:    carreraP2,
-        carrera_p3:    carreraP3,
-        vuelta_rapida: vueltaRapida,
-        moto3_winner:  moto3Winner || null,
-        moto2_winner:  moto2Winner || null,
-      },
-      { onConflict: "user_id,carrera_id" }
-    );
+    const result = await guardarApuesta({
+      pole,
+      sprint_p1:     sprintP1,
+      sprint_p2:     sprintP2,
+      sprint_p3:     sprintP3,
+      carrera_p1:    carreraP1,
+      carrera_p2:    carreraP2,
+      carrera_p3:    carreraP3,
+      vuelta_rapida: vueltaRapida,
+      moto3_winner:  moto3Winner || null,
+      moto2_winner:  moto2Winner || null,
+    });
 
     setMensaje(
-      error
-        ? { texto: "Error al guardar. Inténtalo de nuevo.", ok: false }
+      result.error
+        ? { texto: result.error, ok: false }
         : { texto: "✅ Apuesta guardada correctamente.", ok: true }
     );
     setGuardando(false);
