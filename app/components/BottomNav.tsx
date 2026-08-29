@@ -10,7 +10,7 @@ type Props = {
 const links = [
   { href: "/apuesta",   label: "Apostar",   icon: "🗳️" },
   { href: "/general",   label: "General",   icon: "📊" },
-  { href: "/clasificacion", label: "GP actual", icon: "🏎️" },
+  { href: "/clasificacion", label: "GP actual", icon: "🏍️" },
   { href: "/historial", label: "Historial", icon: "🏁" },
 ];
 
