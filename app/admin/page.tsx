@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { PILOTOS } from "@/lib/pilotos";
+import { PILOTOS, nombrePiloto } from "@/lib/pilotos";
 import { gpActual } from "@/lib/calendario";
 import { PUNTOS } from "@/lib/puntuacion";
 
@@ -82,6 +82,14 @@ export default function AdminPage() {
   const [guardandoPodcast, setGuardandoPodcast] = useState(false);
   const [mensajePodcast,  setMensajePodcast]  = useState<{ texto: string; ok: boolean } | null>(null);
 
+  // ── Log de votos ──
+  const [logVotos, setLogVotos] = useState<{
+    id: number; nombre: string; carrera_id: string;
+    pole: number | null; sprint_p1: number | null; sprint_p2: number | null; sprint_p3: number | null;
+    carrera_p1: number | null; carrera_p2: number | null; carrera_p3: number | null;
+    vuelta_rapida: number | null; guardado_at: string;
+  }[]>([]);
+
   // ── Resultados ──
   const [pole,     setPole]     = useState<number | null>(null);
   const [sprintP1, setSprintP1] = useState<number | null>(null);
@@ -112,6 +120,13 @@ export default function AdminPage() {
         const { data: podcastsData } = await supabase
           .from("podcasts").select("*").order("created_at", { ascending: false });
         setPodcasts(podcastsData ?? []);
+
+        const { data: logData } = await supabase
+          .from("apuestas_log")
+          .select("*, perfiles(nombre)")
+          .order("guardado_at", { ascending: false })
+          .limit(200);
+        setLogVotos((logData ?? []).map((r: any) => ({ ...r, nombre: r.perfiles?.nombre ?? "Desconocido" })));
 
         if (cierres) {
           setCierrePole(toLocal(cierres.cierre_pole));
@@ -437,6 +452,54 @@ export default function AdminPage() {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+      {/* ══ LOG DE VOTOS ══ */}
+      <div className="flex flex-col gap-4 p-6 bg-zinc-50 rounded-2xl border-2 border-zinc-100">
+        <h2 className="text-lg font-black text-black">📋 Log de votos</h2>
+        <p className="text-xs text-zinc-400 -mt-2">Registro de cada vez que un jugador guardó su apuesta. Más reciente primero.</p>
+
+        {logVotos.length === 0 ? (
+          <p className="text-sm text-zinc-400 text-center py-4">Aún no hay registros. Se irán guardando a partir de ahora.</p>
+        ) : (
+          <div className="flex flex-col gap-2 overflow-x-auto">
+            <table className="text-xs w-full min-w-[600px]">
+              <thead>
+                <tr className="text-left text-zinc-400 uppercase tracking-widest border-b border-zinc-200">
+                  <th className="pb-2 pr-3 font-bold">Hora (España)</th>
+                  <th className="pb-2 pr-3 font-bold">Jugador</th>
+                  <th className="pb-2 pr-3 font-bold">GP</th>
+                  <th className="pb-2 pr-3 font-bold">Pole</th>
+                  <th className="pb-2 pr-3 font-bold">S🥇</th>
+                  <th className="pb-2 pr-3 font-bold">S🥈</th>
+                  <th className="pb-2 pr-3 font-bold">S🥉</th>
+                  <th className="pb-2 pr-3 font-bold">C🥇</th>
+                  <th className="pb-2 pr-3 font-bold">C🥈</th>
+                  <th className="pb-2 pr-3 font-bold">C🥉</th>
+                  <th className="pb-2 font-bold">⚡</th>
+                </tr>
+              </thead>
+              <tbody>
+                {logVotos.map((r) => (
+                  <tr key={r.id} className="border-b border-zinc-100 hover:bg-white transition-colors">
+                    <td className="py-2 pr-3 text-zinc-500 tabular-nums whitespace-nowrap">
+                      {new Date(r.guardado_at).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </td>
+                    <td className="py-2 pr-3 font-bold text-black">{r.nombre}</td>
+                    <td className="py-2 pr-3 text-zinc-500">{r.carrera_id.replace("-2026", "")}</td>
+                    <td className="py-2 pr-3">{r.pole ? nombrePiloto(r.pole) : <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2 pr-3">{r.sprint_p1 ? nombrePiloto(r.sprint_p1) : <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2 pr-3">{r.sprint_p2 ? nombrePiloto(r.sprint_p2) : <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2 pr-3">{r.sprint_p3 ? nombrePiloto(r.sprint_p3) : <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2 pr-3">{r.carrera_p1 ? nombrePiloto(r.carrera_p1) : <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2 pr-3">{r.carrera_p2 ? nombrePiloto(r.carrera_p2) : <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2 pr-3">{r.carrera_p3 ? nombrePiloto(r.carrera_p3) : <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2">{r.vuelta_rapida ? nombrePiloto(r.vuelta_rapida) : <span className="text-zinc-300">—</span>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
