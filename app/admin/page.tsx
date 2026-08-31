@@ -83,6 +83,7 @@ export default function AdminPage() {
   const [mensajePodcast,  setMensajePodcast]  = useState<{ texto: string; ok: boolean } | null>(null);
 
   // ── Log de votos ──
+  const [filtroGP, setFiltroGP] = useState("todos");
   const [logVotos, setLogVotos] = useState<{
     id: number; nombre: string; carrera_id: string;
     pole: number | null; sprint_p1: number | null; sprint_p2: number | null; sprint_p3: number | null;
@@ -457,8 +458,22 @@ export default function AdminPage() {
       </div>
       {/* ══ LOG DE VOTOS ══ */}
       <div className="flex flex-col gap-4 p-6 bg-zinc-50 rounded-2xl border-2 border-zinc-100">
-        <h2 className="text-lg font-black text-black">📋 Log de votos</h2>
-        <p className="text-xs text-zinc-400 -mt-2">Registro de cada vez que un jugador guardó su apuesta. Más reciente primero.</p>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 className="text-lg font-black text-black">📋 Log de votos</h2>
+            <p className="text-xs text-zinc-400">Registro de cada vez que un jugador guardó su apuesta. Más reciente primero.</p>
+          </div>
+          <select
+            value={filtroGP}
+            onChange={(e) => setFiltroGP(e.target.value)}
+            className="border-2 border-zinc-200 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:border-black bg-white"
+          >
+            <option value="todos">Todos los GPs</option>
+            {[...new Set(logVotos.map((r) => r.carrera_id))].map((id) => (
+              <option key={id} value={id}>{id.replace("-2026", "").replace(/-/g, " ")}</option>
+            ))}
+          </select>
+        </div>
 
         {logVotos.length === 0 ? (
           <p className="text-sm text-zinc-400 text-center py-4">Aún no hay registros. Se irán guardando a partir de ahora.</p>
@@ -481,7 +496,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {logVotos.map((r) => (
+                {logVotos.filter((r) => filtroGP === "todos" || r.carrera_id === filtroGP).map((r) => (
                   <tr key={r.id} className="border-b border-zinc-100 hover:bg-white transition-colors">
                     <td className="py-2 pr-3 text-zinc-500 tabular-nums whitespace-nowrap">
                       {new Date(r.guardado_at).toLocaleString("es-ES", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
