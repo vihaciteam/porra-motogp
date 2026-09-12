@@ -5,9 +5,7 @@ import { createClient } from "@/utils/supabase/client";
 import { PILOTOS, nombrePiloto } from "@/lib/pilotos";
 import { gpActual } from "@/lib/calendario";
 import { PUNTOS } from "@/lib/puntuacion";
-
-const ADMIN_EMAIL = "vihaciteam@gmail.com";
-const GP = gpActual();
+import { ADMIN_EMAIL } from "@/lib/config";
 
 /* Convierte un timestamptz UTC de la BD al formato local que acepta
    <input type="datetime-local">. Usa los métodos locales del navegador
@@ -65,6 +63,7 @@ function PilotoSelect({
 }
 
 export default function AdminPage() {
+  const [GP] = useState(() => gpActual());
   const [email, setEmail]     = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
 
@@ -89,6 +88,7 @@ export default function AdminPage() {
     pole: number | null; sprint_p1: number | null; sprint_p2: number | null; sprint_p3: number | null;
     carrera_p1: number | null; carrera_p2: number | null; carrera_p3: number | null;
     vuelta_rapida: number | null; guardado_at: string;
+    moto3_winner: string | null; moto2_winner: string | null;
   }[]>([]);
 
   // ── Resultados ──
@@ -172,6 +172,7 @@ export default function AdminPage() {
   }
 
   async function eliminarPodcast(id: string) {
+    if (!window.confirm("¿Eliminar este podcast? Esta acción no se puede deshacer.")) return;
     await supabase.from("podcasts").delete().eq("id", id);
     setPodcasts((prev) => prev.filter((p) => p.id !== id));
   }
@@ -492,7 +493,9 @@ export default function AdminPage() {
                   <th className="pb-2 pr-3 font-bold">C🥇</th>
                   <th className="pb-2 pr-3 font-bold">C🥈</th>
                   <th className="pb-2 pr-3 font-bold">C🥉</th>
-                  <th className="pb-2 font-bold">⚡</th>
+                  <th className="pb-2 pr-3 font-bold">⚡</th>
+                  <th className="pb-2 pr-3 font-bold">Moto3</th>
+                  <th className="pb-2 font-bold">Moto2</th>
                 </tr>
               </thead>
               <tbody>
@@ -510,7 +513,9 @@ export default function AdminPage() {
                     <td className="py-2 pr-3">{r.carrera_p1 ? nombrePiloto(r.carrera_p1) : <span className="text-zinc-300">—</span>}</td>
                     <td className="py-2 pr-3">{r.carrera_p2 ? nombrePiloto(r.carrera_p2) : <span className="text-zinc-300">—</span>}</td>
                     <td className="py-2 pr-3">{r.carrera_p3 ? nombrePiloto(r.carrera_p3) : <span className="text-zinc-300">—</span>}</td>
-                    <td className="py-2">{r.vuelta_rapida ? nombrePiloto(r.vuelta_rapida) : <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2 pr-3">{r.vuelta_rapida ? nombrePiloto(r.vuelta_rapida) : <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2 pr-3">{r.moto3_winner ?? <span className="text-zinc-300">—</span>}</td>
+                    <td className="py-2">{r.moto2_winner ?? <span className="text-zinc-300">—</span>}</td>
                   </tr>
                 ))}
               </tbody>

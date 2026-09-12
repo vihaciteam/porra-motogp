@@ -7,8 +7,6 @@ import { gpActual } from "@/lib/calendario";
 import { PUNTOS, jornadaAbierta } from "@/lib/puntuacion";
 import { guardarApuesta } from "./actions";
 
-const GP = gpActual();
-
 function formatFecha(iso: string) {
   return new Date(iso + "T12:00:00").toLocaleDateString("es-ES", {
     day: "numeric", month: "short", year: "numeric",
@@ -118,6 +116,7 @@ function BadgeEstado({ abierto }: { abierto: boolean }) {
 }
 
 export default function ApuestaPage() {
+  const [GP] = useState(() => gpActual());
   // Sábado
   const [pole,     setPole]     = useState<number | null>(null);
   const [sprintP1, setSprintP1] = useState<number | null>(null);
@@ -188,6 +187,7 @@ export default function ApuestaPage() {
   const sprintAbierto  = jornadaAbierta(cierreSabado);
   const domingoAbierto = jornadaAbierta(cierreDomingo);
   const todoCerrado    = !poleAbierta && !sprintAbierto && !domingoAbierto;
+  const sinHorarios    = !cargando && !cierrePole && !cierreSabado && !cierreDomingo;
 
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
@@ -249,6 +249,13 @@ export default function ApuestaPage() {
         )}
       </div>
 
+      {GP.votacionEspecial && (
+        <div className="bg-red-600 text-white px-5 py-3 flex items-center gap-2">
+          <span className="text-base">⭐</span>
+          <span className="text-sm font-bold">GP Especial — Este Gran Premio incluye pronósticos de Moto2 y Moto3</span>
+        </div>
+      )}
+
       <div className="px-4 sm:px-6 py-6 flex flex-col gap-6">
       {/* ── RESUMEN DE TU APUESTA GUARDADA ── */}
       {(pole || sprintP1 || sprintP2 || sprintP3 || carreraP1 || carreraP2 || carreraP3 || vueltaRapida || moto3Winner || moto2Winner) && (
@@ -276,8 +283,18 @@ export default function ApuestaPage() {
         </div>
       )}
 
-      {/* Banner si todo está cerrado */}
-      {todoCerrado && (
+      {/* Banner si los horarios no están configurados */}
+      {sinHorarios && (
+        <div className="bg-zinc-800 text-white rounded-2xl px-6 py-4 text-center">
+          <p className="font-bold text-lg">⏳ Horarios pendientes de configurar</p>
+          <p className="text-zinc-400 text-sm mt-1">
+            La votación se abrirá próximamente.
+          </p>
+        </div>
+      )}
+
+      {/* Banner si todo está cerrado (y sí hay horarios configurados) */}
+      {todoCerrado && !sinHorarios && (
         <div className="bg-zinc-900 text-white rounded-2xl px-6 py-4 text-center">
           <p className="font-bold text-lg">🔒 Votación cerrada</p>
           <p className="text-zinc-400 text-sm mt-1">

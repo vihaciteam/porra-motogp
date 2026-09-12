@@ -75,9 +75,8 @@ export default function PerfilPage() {
       // Puntos históricos oficiales (authoritative para el total)
       const totalHistorico = (historial ?? []).reduce((s, h) => s + (h.puntos ?? 0), 0);
 
-      let ptsHistoricoCalc = 0; // pts históricos calculados via apuestas (para separar del total)
       let appPts = 0;           // pts de GPs de la app
-      let gpsTotal = 0;         // todos los GPs jugados (histórico + app)
+      let gpsAppCount = 0;      // GPs de la app con apuesta
       let aciertos = 0;
       let mejorGP = 0;
       let mejorGPNombre: string | null = null;
@@ -87,13 +86,11 @@ export default function PerfilPage() {
         const apuesta  = (misApuestas ?? []).find((a) => a.carrera_id === res.carrera_id);
         if (!apuesta) continue;
 
-        gpsTotal++;
         const pts = calcularPuntos(apuesta as RegistroGP, res as RegistroGP, gpConfig?.votacionEspecial ?? false);
 
-        if (gpConfig?.esHistorico) {
-          ptsHistoricoCalc += pts;
-        } else {
+        if (!gpConfig?.esHistorico) {
           appPts += pts;
+          gpsAppCount++;
         }
 
         // Aciertos campo a campo (histórico + app)
@@ -117,14 +114,14 @@ export default function PerfilPage() {
 
       // Total oficial: historial_puntos (autoridad) + pts calculados de la app
       const total = totalHistorico + appPts;
-      // Media: total oficial / todos los GPs jugados
-      const media = gpsTotal > 0 ? Math.round(total / gpsTotal) : 0;
+      // Media: solo sobre GPs de la app (no históricos)
+      const media = gpsAppCount > 0 ? Math.round(appPts / gpsAppCount) : 0;
 
       setStats({
         totalHistorico,
         totalApp: appPts,
         total,
-        gpsApp:  gpsTotal,
+        gpsApp:  gpsAppCount,
         media,
         aciertos,
         mejorGP,

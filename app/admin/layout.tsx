@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-
-const ADMIN_EMAIL = "vihaciteam@gmail.com";
+import { ADMIN_EMAIL } from "@/lib/config";
 
 /**
  * Protección de servidor para el panel de administrador.

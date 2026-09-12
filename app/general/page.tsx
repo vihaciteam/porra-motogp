@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import { calcularPuntos, type RegistroGP } from "@/lib/puntuacion";
 import { CALENDARIO } from "@/lib/calendario";
@@ -97,7 +98,7 @@ export default async function GeneralPage() {
   standings.sort((a, b) => b.total - a.total);
 
   const gpsEnApp = resultados?.length ?? 0;
-  const gpsHistoricos = 6; // Tailandia, Brasil, USA, España, Francia, Cataluña
+  const gpsHistoricos = CALENDARIO.filter((gp) => gp.esHistorico).length;
 
   const podiumCard = [
     "border-yellow-400 bg-gradient-to-r from-yellow-50 to-white shadow-md shadow-yellow-100",
@@ -201,9 +202,18 @@ export default async function GeneralPage() {
           </div>
         )}
 
-        <p className="text-xs text-zinc-400 text-center mt-6 pb-4">
+        <p className="text-xs text-zinc-400 text-center mt-6">
           Puntos grises: antes de la app · Puntos rojos: desde la app
         </p>
+
+        <div className="mt-4 pb-6 text-center">
+          <Link
+            href="/estadisticas"
+            className="text-sm font-bold text-red-600 hover:text-red-700 transition-colors"
+          >
+            Ver estadísticas detalladas →
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -4,8 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-
-const ADMIN_EMAIL = "vihaciteam@gmail.com";
+import { ADMIN_EMAIL } from "@/lib/config";
 
 type Props = {
   email: string | null;
