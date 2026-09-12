@@ -72,7 +72,7 @@ export function calcularPuntos(
 
 /** La jornada está abierta si aún no se ha llegado a su hora de cierre. */
 export function jornadaAbierta(cierre: string | null): boolean {
-  if (!cierre) return true;
+  if (!cierre) return false;
   return new Date() < new Date(cierre);
 }
 
