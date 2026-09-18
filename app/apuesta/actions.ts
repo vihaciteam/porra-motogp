@@ -31,15 +31,16 @@ export async function guardarApuesta(
   // Leer cierres en el servidor — el cliente no puede manipular esto
   const { data: cierres } = await supabase
     .from("cierres")
-    .select("cierre_pole, cierre_sabado, cierre_domingo")
+    .select("cierre_pole, cierre_sabado, cierre_domingo, cierre_especial")
     .eq("carrera_id", GP.id)
     .maybeSingle();
 
-  const poleAbierta    = jornadaAbierta(cierres?.cierre_pole    ?? null);
-  const sprintAbierto  = jornadaAbierta(cierres?.cierre_sabado  ?? null);
-  const domingoAbierto = jornadaAbierta(cierres?.cierre_domingo ?? null);
+  const poleAbierta     = jornadaAbierta(cierres?.cierre_pole     ?? null);
+  const sprintAbierto   = jornadaAbierta(cierres?.cierre_sabado   ?? null);
+  const domingoAbierto  = jornadaAbierta(cierres?.cierre_domingo  ?? null);
+  const especialAbierto = jornadaAbierta(GP.votacionEspecial ? (cierres?.cierre_especial ?? null) : null);
 
-  if (!poleAbierta && !sprintAbierto && !domingoAbierto) {
+  if (!poleAbierta && !sprintAbierto && !domingoAbierto && !especialAbierto) {
     return { error: "La votación está cerrada." };
   }
 
@@ -63,8 +64,8 @@ export async function guardarApuesta(
     carrera_p2:    domingoAbierto ? payload.carrera_p2    : (existing?.carrera_p2    ?? null),
     carrera_p3:    domingoAbierto ? payload.carrera_p3    : (existing?.carrera_p3    ?? null),
     vuelta_rapida: domingoAbierto ? payload.vuelta_rapida : (existing?.vuelta_rapida ?? null),
-    moto3_winner:  domingoAbierto ? payload.moto3_winner  : (existing?.moto3_winner  ?? null),
-    moto2_winner:  domingoAbierto ? payload.moto2_winner  : (existing?.moto2_winner  ?? null),
+    moto3_winner:  especialAbierto ? payload.moto3_winner  : (existing?.moto3_winner  ?? null),
+    moto2_winner:  especialAbierto ? payload.moto2_winner  : (existing?.moto2_winner  ?? null),
   };
 
   const { error } = await supabase
@@ -85,8 +86,8 @@ export async function guardarApuesta(
     carrera_p2:    domingoAbierto ? payload.carrera_p2    : undefined,
     carrera_p3:    domingoAbierto ? payload.carrera_p3    : undefined,
     vuelta_rapida: domingoAbierto ? payload.vuelta_rapida : undefined,
-    moto3_winner:  domingoAbierto ? payload.moto3_winner  : undefined,
-    moto2_winner:  domingoAbierto ? payload.moto2_winner  : undefined,
+    moto3_winner:  especialAbierto ? payload.moto3_winner  : undefined,
+    moto2_winner:  especialAbierto ? payload.moto2_winner  : undefined,
   });
 
   return { ok: true };

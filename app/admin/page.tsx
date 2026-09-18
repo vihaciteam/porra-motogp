@@ -68,9 +68,10 @@ export default function AdminPage() {
   const [cargando, setCargando] = useState(true);
 
   // ── Horarios ──
-  const [cierrePole,    setCierrePole]    = useState("");
-  const [cierreSabado,  setCierreSabado]  = useState("");
-  const [cierreDomingo, setCierreDomingo] = useState("");
+  const [cierrePole,     setCierrePole]     = useState("");
+  const [cierreSabado,   setCierreSabado]   = useState("");
+  const [cierreDomingo,  setCierreDomingo]  = useState("");
+  const [cierreEspecial, setCierreEspecial] = useState("");
   const [guardandoHorario, setGuardandoHorario] = useState(false);
   const [mensajeHorario, setMensajeHorario] = useState<{ texto: string; ok: boolean } | null>(null);
 
@@ -133,6 +134,7 @@ export default function AdminPage() {
           setCierrePole(toLocal(cierres.cierre_pole));
           setCierreSabado(toLocal(cierres.cierre_sabado));
           setCierreDomingo(toLocal(cierres.cierre_domingo));
+          setCierreEspecial(toLocal(cierres.cierre_especial));
         }
         if (resultado) {
           setPole(resultado.pole ?? null);
@@ -186,9 +188,10 @@ export default function AdminPage() {
     const { error } = await supabase.from("cierres").upsert(
       {
         carrera_id:     GP.id,
-        cierre_pole:    fromLocal(cierrePole),
-        cierre_sabado:  fromLocal(cierreSabado),
-        cierre_domingo: fromLocal(cierreDomingo),
+        cierre_pole:     fromLocal(cierrePole),
+        cierre_sabado:   fromLocal(cierreSabado),
+        cierre_domingo:  fromLocal(cierreDomingo),
+        cierre_especial: GP.votacionEspecial ? fromLocal(cierreEspecial) : null,
         updated_at:     new Date().toISOString(),
       },
       { onConflict: "carrera_id" }
@@ -305,6 +308,23 @@ export default function AdminPage() {
             />
           </div>
         </div>
+
+        {GP.votacionEspecial && (
+          <div className="flex flex-col gap-1.5 border-t border-zinc-100 pt-4">
+            <label className="text-sm font-bold text-black">
+              ⭐ Cierre Moto2 / Moto3
+            </label>
+            <p className="text-xs text-zinc-400">
+              {formatFecha(GP.fechaCarrera)} · Antes de que empiece la carrera de Moto3
+            </p>
+            <input
+              type="datetime-local"
+              value={cierreEspecial}
+              onChange={(e) => setCierreEspecial(e.target.value)}
+              className="border-2 border-red-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500 transition-colors bg-white max-w-xs"
+            />
+          </div>
+        )}
 
         {mensajeHorario && (
           <p className={`text-sm rounded-lg px-4 py-2 border ${mensajeHorario.ok ? "text-green-700 bg-green-50 border-green-200" : "text-red-600 bg-red-50 border-red-200"}`}>

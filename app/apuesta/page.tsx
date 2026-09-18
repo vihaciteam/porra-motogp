@@ -131,9 +131,10 @@ export default function ApuestaPage() {
   const [moto3Winner, setMoto3Winner] = useState("");
   const [moto2Winner, setMoto2Winner] = useState("");
   // Horarios de cierre
-  const [cierrePole,    setCierrePole]    = useState<string | null>(null);
-  const [cierreSabado,  setCierreSabado]  = useState<string | null>(null);
-  const [cierreDomingo, setCierreDomingo] = useState<string | null>(null);
+  const [cierrePole,     setCierrePole]     = useState<string | null>(null);
+  const [cierreSabado,   setCierreSabado]   = useState<string | null>(null);
+  const [cierreDomingo,  setCierreDomingo]  = useState<string | null>(null);
+  const [cierreEspecial, setCierreEspecial] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
   // UI
   const [guardando, setGuardando] = useState(false);
@@ -155,7 +156,7 @@ export default function ApuestaPage() {
           .maybeSingle(),
         supabase
           .from("cierres")
-          .select("cierre_pole, cierre_sabado, cierre_domingo")
+          .select("cierre_pole, cierre_sabado, cierre_domingo, cierre_especial")
           .eq("carrera_id", GP.id)
           .maybeSingle(),
       ]);
@@ -176,6 +177,7 @@ export default function ApuestaPage() {
         setCierrePole(cierres.cierre_pole ?? null);
         setCierreSabado(cierres.cierre_sabado ?? null);
         setCierreDomingo(cierres.cierre_domingo ?? null);
+        setCierreEspecial(cierres.cierre_especial ?? null);
       }
       setCargando(false);
     }
@@ -183,11 +185,12 @@ export default function ApuestaPage() {
   }, []);
 
   // Calculado en cada render → siempre actualizado
-  const poleAbierta    = jornadaAbierta(cierrePole);
-  const sprintAbierto  = jornadaAbierta(cierreSabado);
-  const domingoAbierto = jornadaAbierta(cierreDomingo);
-  const todoCerrado    = !poleAbierta && !sprintAbierto && !domingoAbierto;
-  const sinHorarios    = !cargando && !cierrePole && !cierreSabado && !cierreDomingo;
+  const poleAbierta      = jornadaAbierta(cierrePole);
+  const sprintAbierto    = jornadaAbierta(cierreSabado);
+  const domingoAbierto   = jornadaAbierta(cierreDomingo);
+  const especialAbierto  = jornadaAbierta(GP?.votacionEspecial ? cierreEspecial : null);
+  const todoCerrado      = !poleAbierta && !sprintAbierto && !domingoAbierto && !especialAbierto;
+  const sinHorarios      = !cargando && !cierrePole && !cierreSabado && !cierreDomingo && !(GP?.votacionEspecial && cierreEspecial);
 
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
@@ -440,9 +443,12 @@ export default function ApuestaPage() {
             </span>
             <div className="h-px flex-1 bg-red-200" />
           </div>
-          <p className="text-xs text-zinc-400">
-            Escribe el nombre exacto del piloto ganador en Moto3 y Moto2 (10 pts cada uno si aciertas).
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-zinc-400">
+              Escribe el nombre exacto del piloto ganador en Moto3 y Moto2 (10 pts cada uno si aciertas).
+            </p>
+            <BadgeEstado abierto={especialAbierto} />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
@@ -454,9 +460,9 @@ export default function ApuestaPage() {
                 value={moto3Winner}
                 onChange={(e) => setMoto3Winner(e.target.value)}
                 placeholder="Nombre del piloto"
-                disabled={!domingoAbierto}
+                disabled={!especialAbierto}
                 className={`border-2 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors
-                  ${!domingoAbierto
+                  ${!especialAbierto
                     ? "border-zinc-100 bg-zinc-50 text-zinc-400 cursor-not-allowed"
                     : "border-zinc-200 focus:border-red-500"
                   }`}
@@ -472,9 +478,9 @@ export default function ApuestaPage() {
                 value={moto2Winner}
                 onChange={(e) => setMoto2Winner(e.target.value)}
                 placeholder="Nombre del piloto"
-                disabled={!domingoAbierto}
+                disabled={!especialAbierto}
                 className={`border-2 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors
-                  ${!domingoAbierto
+                  ${!especialAbierto
                     ? "border-zinc-100 bg-zinc-50 text-zinc-400 cursor-not-allowed"
                     : "border-zinc-200 focus:border-red-500"
                   }`}
