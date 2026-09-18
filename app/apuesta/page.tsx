@@ -461,7 +461,7 @@ export default function ApuestaPage() {
                 className={`border-2 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors
                   ${!especialAbierto
                     ? "border-zinc-100 bg-zinc-50 text-zinc-400 cursor-not-allowed"
-                    : "border-zinc-200 focus:border-red-500"
+                    : "border-zinc-200 bg-white text-black focus:border-red-500"
                   }`}
               />
             </div>
@@ -479,7 +479,7 @@ export default function ApuestaPage() {
                 className={`border-2 rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors
                   ${!especialAbierto
                     ? "border-zinc-100 bg-zinc-50 text-zinc-400 cursor-not-allowed"
-                    : "border-zinc-200 focus:border-red-500"
+                    : "border-zinc-200 bg-white text-black focus:border-red-500"
                   }`}
               />
             </div>

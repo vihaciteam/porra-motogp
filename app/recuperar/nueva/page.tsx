@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -60,7 +60,7 @@ export default function NuevaContrasenaPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Mínimo 6 caracteres"
-              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
             />
           </div>
 
@@ -72,7 +72,7 @@ export default function NuevaContrasenaPage() {
               onChange={(e) => setPassword2(e.target.value)}
               required
               placeholder="••••••••"
-              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
             />
           </div>
 
@@ -95,3 +95,4 @@ export default function NuevaContrasenaPage() {
     </div>
   );
 }
+

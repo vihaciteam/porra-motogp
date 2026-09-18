@@ -272,7 +272,7 @@ export default function PerfilPage() {
             onChange={e => setNombreEdit(e.target.value)}
             maxLength={30}
             placeholder="Tu nombre o alias"
-            className="w-full border-2 border-zinc-200 rounded-xl px-4 py-3 text-base font-bold text-black focus:outline-none focus:border-black transition-colors"
+            className="w-full border-2 border-zinc-200 rounded-xl px-4 py-3 text-base font-bold text-black focus:outline-none focus:border-black transition-colors bg-white"
           />
         </div>
         <button

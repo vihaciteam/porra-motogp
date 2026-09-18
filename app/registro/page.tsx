@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -66,7 +66,7 @@ export default function RegistroPage() {
               onChange={(e) => setNombre(e.target.value)}
               required
               placeholder="Como quieres aparecer en la clasificación"
-              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
             />
           </div>
 
@@ -78,7 +78,7 @@ export default function RegistroPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="tu@email.com"
-              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
             />
           </div>
 
@@ -90,7 +90,7 @@ export default function RegistroPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Mínimo 6 caracteres"
-              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors"
+              className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
             />
           </div>
 
@@ -120,3 +120,4 @@ export default function RegistroPage() {
     </div>
   );
 }
+
