@@ -35,14 +35,15 @@ export default async function ClasificacionPage() {
     supabase.from("apuestas").select("user_id, pole, sprint_p1, sprint_p2, sprint_p3, carrera_p1, carrera_p2, carrera_p3, vuelta_rapida, moto3_winner, moto2_winner").eq("carrera_id", GP.id),
     supabase.from("resultados").select("pole, sprint_p1, sprint_p2, sprint_p3, carrera_p1, carrera_p2, carrera_p3, vuelta_rapida, moto3_winner, moto2_winner").eq("carrera_id", GP.id).maybeSingle(),
     supabase.from("perfiles").select("id, nombre, avatar_url"),
-    supabase.from("cierres").select("cierre_pole, cierre_sabado, cierre_domingo").eq("carrera_id", GP.id).maybeSingle(),
+    supabase.from("cierres").select("cierre_pole, cierre_sabado, cierre_domingo, cierre_especial").eq("carrera_id", GP.id).maybeSingle(),
   ]);
 
   // Revelación progresiva: cada sección se desvela 1 min después de su cierre.
-  const poleRevelada    = votosRevelados(cierreData?.cierre_pole    ?? null);
-  const sprintRevelado  = votosRevelados(cierreData?.cierre_sabado  ?? null);
-  const domingoRevelado = votosRevelados(cierreData?.cierre_domingo ?? null);
-  const algunRevelado   = poleRevelada || sprintRevelado || domingoRevelado;
+  const poleRevelada     = votosRevelados(cierreData?.cierre_pole     ?? null);
+  const sprintRevelado   = votosRevelados(cierreData?.cierre_sabado   ?? null);
+  const domingoRevelado  = votosRevelados(cierreData?.cierre_domingo  ?? null);
+  const especialRevelado = votosRevelados(GP.votacionEspecial ? (cierreData?.cierre_especial ?? null) : null);
+  const algunRevelado    = poleRevelada || sprintRevelado || domingoRevelado || especialRevelado;
 
   const res = resultado as RegistroGP | null;
 
@@ -167,18 +168,28 @@ export default async function ClasificacionPage() {
                   <span className="text-xs bg-zinc-50 text-zinc-300 rounded-lg px-2 py-1">🔒 Sprint</span>
                 )}
 
-                {/* Carrera + vuelta rápida + especiales */}
+                {/* Carrera + vuelta rápida */}
                 {domingoRevelado ? (
                   <>
                     <Chip label="C🥇" valor={j.apuesta.carrera_p1 ? nombrePiloto(j.apuesta.carrera_p1) : null} acierto={!!res && j.apuesta.carrera_p1 === res.carrera_p1} />
                     <Chip label="C🥈" valor={j.apuesta.carrera_p2 ? nombrePiloto(j.apuesta.carrera_p2) : null} acierto={!!res && j.apuesta.carrera_p2 === res.carrera_p2} />
                     <Chip label="C🥉" valor={j.apuesta.carrera_p3 ? nombrePiloto(j.apuesta.carrera_p3) : null} acierto={!!res && j.apuesta.carrera_p3 === res.carrera_p3} />
                     <Chip label="⚡" valor={j.apuesta.vuelta_rapida ? nombrePiloto(j.apuesta.vuelta_rapida) : null} acierto={!!res && j.apuesta.vuelta_rapida === res.vuelta_rapida} />
-                    {GP.votacionEspecial && <Chip label="Moto3" valor={j.apuesta.moto3_winner} acierto={!!res && j.apuesta.moto3_winner === res.moto3_winner} />}
-                    {GP.votacionEspecial && <Chip label="Moto2" valor={j.apuesta.moto2_winner} acierto={!!res && j.apuesta.moto2_winner === res.moto2_winner} />}
                   </>
                 ) : (
                   <span className="text-xs bg-zinc-50 text-zinc-300 rounded-lg px-2 py-1">🔒 Carrera</span>
+                )}
+
+                {/* Especiales Moto2/Moto3 — cierre independiente */}
+                {GP.votacionEspecial && (
+                  especialRevelado ? (
+                    <>
+                      <Chip label="Moto3" valor={j.apuesta.moto3_winner} acierto={!!res && j.apuesta.moto3_winner === res.moto3_winner} />
+                      <Chip label="Moto2" valor={j.apuesta.moto2_winner} acierto={!!res && j.apuesta.moto2_winner === res.moto2_winner} />
+                    </>
+                  ) : (
+                    <span className="text-xs bg-zinc-50 text-zinc-300 rounded-lg px-2 py-1">🔒 Especial</span>
+                  )
                 )}
 
               </div>
