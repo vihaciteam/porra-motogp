@@ -436,22 +436,16 @@ export default function ApuestaPage() {
       {/* ── ESPECIAL (solo Austria) ── */}
       {GP.votacionEspecial && (
         <section className="flex flex-col gap-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <div className="h-px flex-1 bg-red-200" />
-            <span className="text-xs font-black uppercase tracking-widest text-red-500">
-              ⭐ Votación especial
-            </span>
+            <span className="text-xs font-black uppercase tracking-widest text-red-500">⭐ Votación especial</span>
+            <BadgeEstado abierto={especialAbierto} />
+            {especialAbierto && <Contador cierre={cierreEspecial} />}
             <div className="h-px flex-1 bg-red-200" />
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-zinc-400">
-              Escribe el nombre exacto del piloto ganador en Moto3 y Moto2 (10 pts cada uno si aciertas).
-            </p>
-            <div className="flex items-center gap-2">
-              {especialAbierto && <Contador cierre={cierreEspecial} />}
-              <BadgeEstado abierto={especialAbierto} />
-            </div>
-          </div>
+          <p className="text-xs text-zinc-400">
+            Escribe el nombre exacto del piloto ganador en Moto3 y Moto2 (10 pts cada uno si aciertas).
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
