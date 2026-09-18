@@ -447,7 +447,10 @@ export default function ApuestaPage() {
             <p className="text-xs text-zinc-400">
               Escribe el nombre exacto del piloto ganador en Moto3 y Moto2 (10 pts cada uno si aciertas).
             </p>
-            <BadgeEstado abierto={especialAbierto} />
+            <div className="flex items-center gap-2">
+              {especialAbierto && <Contador cierre={cierreEspecial} />}
+              <BadgeEstado abierto={especialAbierto} />
+            </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
