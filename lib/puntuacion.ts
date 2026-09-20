@@ -71,29 +71,27 @@ export function calcularPuntos(
 }
 
 /**
- * Compara dos nombres de piloto de forma tolerante:
- * - Ignora mayúsculas, acentos y puntos
- * - Acepta abreviaciones de nombre ("M. Quiles" == "Maximo Quiles")
+ * Compara dos nombres de piloto de forma tolerante.
+ * Extrae solo las secuencias de letras (ignora puntos, espacios, caracteres
+ * invisibles, acentos…) y acepta abreviaciones ("M" == "Maximo").
  */
 export function mismoGanador(a: string | null, b: string | null): boolean {
   if (!a || !b) return false;
 
-  const norm = (s: string) =>
-    s.trim().toLowerCase()
-      .normalize("NFD").replace(/[̀-ͯ]/g, "") // quita acentos
-      .replace(/[^a-z\s]/g, "")                         // solo letras y espacios
-      .replace(/\s+/g, " ").trim();                     // colapsa espacios
+  const tokens = (s: string): string[] => {
+    const sinAcentos = s.normalize("NFD").replace(/\p{Mn}/gu, "");
+    return (sinAcentos.toLowerCase().match(/[a-z]+/g) ?? []);
+  };
 
-  const na = norm(a);
-  const nb = norm(b);
-  if (na === nb) return true;
+  const ta = tokens(a);
+  const tb = tokens(b);
 
-  const pa = na.split(" ");
-  const pb = nb.split(" ");
-  if (pa.length !== pb.length) return false;
+  if (ta.length === 0 || tb.length === 0) return false;
+  if (ta.join(" ") === tb.join(" ")) return true;
+  if (ta.length !== tb.length) return false;
 
-  return pa.every((wa, i) => {
-    const wb = pb[i];
+  return ta.every((wa, i) => {
+    const wb = tb[i];
     return wa === wb ||
       (wa.length === 1 && wb.startsWith(wa)) ||
       (wb.length === 1 && wa.startsWith(wb));
