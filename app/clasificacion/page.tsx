@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { createClient } from "@/utils/supabase/server";
 import { nombrePiloto } from "@/lib/pilotos";
 import { calcularPuntos, mismoGanador, PUNTOS, votosRevelados, type RegistroGP } from "@/lib/puntuacion";

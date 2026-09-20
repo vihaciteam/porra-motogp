@@ -80,9 +80,9 @@ export function mismoGanador(a: string | null, b: string | null): boolean {
 
   const norm = (s: string) =>
     s.trim().toLowerCase()
-      .normalize("NFD").replace(/[̀-ͯ]/g, "")
-      .replace(/\./g, "")
-      .replace(/\s+/g, " ");
+      .normalize("NFD").replace(/[̀-ͯ]/g, "") // quita acentos
+      .replace(/[^a-z\s]/g, "")                         // solo letras y espacios
+      .replace(/\s+/g, " ").trim();                     // colapsa espacios
 
   const na = norm(a);
   const nb = norm(b);
