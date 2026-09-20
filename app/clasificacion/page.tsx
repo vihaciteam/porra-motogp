@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { nombrePiloto } from "@/lib/pilotos";
-import { calcularPuntos, PUNTOS, votosRevelados, type RegistroGP } from "@/lib/puntuacion";
+import { calcularPuntos, mismoGanador, PUNTOS, votosRevelados, type RegistroGP } from "@/lib/puntuacion";
 import { gpActual } from "@/lib/calendario";
 import { Avatar } from "@/app/components/Avatar";
 
@@ -184,8 +184,8 @@ export default async function ClasificacionPage() {
                 {GP.votacionEspecial && (
                   especialRevelado ? (
                     <>
-                      <Chip label="Moto3" valor={j.apuesta.moto3_winner} acierto={!!res && j.apuesta.moto3_winner === res.moto3_winner} />
-                      <Chip label="Moto2" valor={j.apuesta.moto2_winner} acierto={!!res && j.apuesta.moto2_winner === res.moto2_winner} />
+                      <Chip label="Moto3" valor={j.apuesta.moto3_winner} acierto={!!res && mismoGanador(j.apuesta.moto3_winner, res.moto3_winner)} />
+                      <Chip label="Moto2" valor={j.apuesta.moto2_winner} acierto={!!res && mismoGanador(j.apuesta.moto2_winner, res.moto2_winner)} />
                     </>
                   ) : (
                     <span className="text-xs bg-zinc-50 text-zinc-300 rounded-lg px-2 py-1">🔒 Especial</span>

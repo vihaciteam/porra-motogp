@@ -63,11 +63,41 @@ export function calcularPuntos(
 
   // Especial
   if (votacionEspecial) {
-    if (apuesta.moto3_winner && apuesta.moto3_winner === resultado.moto3_winner) pts += PUNTOS.especial.moto3;
-    if (apuesta.moto2_winner && apuesta.moto2_winner === resultado.moto2_winner) pts += PUNTOS.especial.moto2;
+    if (mismoGanador(apuesta.moto3_winner, resultado.moto3_winner)) pts += PUNTOS.especial.moto3;
+    if (mismoGanador(apuesta.moto2_winner, resultado.moto2_winner)) pts += PUNTOS.especial.moto2;
   }
 
   return pts;
+}
+
+/**
+ * Compara dos nombres de piloto de forma tolerante:
+ * - Ignora mayúsculas, acentos y puntos
+ * - Acepta abreviaciones de nombre ("M. Quiles" == "Maximo Quiles")
+ */
+export function mismoGanador(a: string | null, b: string | null): boolean {
+  if (!a || !b) return false;
+
+  const norm = (s: string) =>
+    s.trim().toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/\./g, "")
+      .replace(/\s+/g, " ");
+
+  const na = norm(a);
+  const nb = norm(b);
+  if (na === nb) return true;
+
+  const pa = na.split(" ");
+  const pb = nb.split(" ");
+  if (pa.length !== pb.length) return false;
+
+  return pa.every((wa, i) => {
+    const wb = pb[i];
+    return wa === wb ||
+      (wa.length === 1 && wb.startsWith(wa)) ||
+      (wb.length === 1 && wa.startsWith(wb));
+  });
 }
 
 /** La jornada está abierta si aún no se ha llegado a su hora de cierre. */
