@@ -79,7 +79,7 @@ export function mismoGanador(a: string | null, b: string | null): boolean {
   if (!a || !b) return false;
 
   const tokens = (s: string): string[] => {
-    const sinAcentos = s.normalize("NFD").replace(/\p{Mn}/gu, "");
+    const sinAcentos = s.normalize("NFD").replace(/[̀-ͯ]/g, "");
     return (sinAcentos.toLowerCase().match(/[a-z]+/g) ?? []);
   };
 
