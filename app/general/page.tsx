@@ -223,6 +223,15 @@ export default async function GeneralPage() {
           Puntos grises: antes de la app · Puntos rojos: desde la app
         </p>
 
+        {ptsRestantes === 0 && standings.length > 0 && (
+          <Link
+            href="/final"
+            className="mt-6 flex items-center justify-center gap-2 bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-500 hover:to-amber-500 text-black font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-yellow-200 text-lg"
+          >
+            🏆 Ceremonia de entrega de premios
+          </Link>
+        )}
+
         <div className="mt-4 pb-6 text-center">
           <Link
             href="/estadisticas"
