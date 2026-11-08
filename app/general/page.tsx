@@ -97,11 +97,23 @@ export default async function GeneralPage() {
   // Ordenar por total
   standings.sort((a, b) => b.total - a.total);
 
+  // ── Puntos máximos que quedan por jugarse ──────────────────────────────
+  const gpIdsConResultado = new Set((resultados ?? []).map((r) => r.carrera_id));
+  const ptsRestantes = CALENDARIO
+    .filter((gp) => !gp.esHistorico && !gpIdsConResultado.has(gp.id))
+    .reduce((sum, gp) => sum + (gp.votacionEspecial ? 111 : 91), 0);
+
+  const campeonMatematico =
+    standings.length >= 1 &&
+    (standings.length === 1 || standings[0].total - standings[1].total > ptsRestantes);
+
   const gpsEnApp = resultados?.length ?? 0;
   const gpsHistoricos = CALENDARIO.filter((gp) => gp.esHistorico).length;
 
   const podiumCard = [
-    "border-yellow-400 bg-gradient-to-r from-yellow-50 to-white shadow-md shadow-yellow-100",
+    campeonMatematico
+      ? "border-yellow-400 bg-gradient-to-r from-yellow-100 via-yellow-50 to-white shadow-lg shadow-yellow-200 ring-2 ring-yellow-400"
+      : "border-yellow-400 bg-gradient-to-r from-yellow-50 to-white shadow-md shadow-yellow-100",
     "border-zinc-300 bg-gradient-to-r from-zinc-50 to-white shadow-sm",
     "border-amber-500 bg-gradient-to-r from-amber-50 to-white shadow-sm",
   ];
@@ -172,7 +184,12 @@ export default async function GeneralPage() {
                         − {diferencia} pts
                       </p>
                     )}
-                    {i === 0 && (
+                    {i === 0 && campeonMatematico && (
+                      <p className="text-xs font-black text-yellow-600 tracking-wide">
+                        🏆 CAMPEÓN DEL MUNDO 2026
+                      </p>
+                    )}
+                    {i === 0 && !campeonMatematico && (
                       <p className="text-xs text-yellow-600 font-bold">LÍDER</p>
                     )}
                   </div>
