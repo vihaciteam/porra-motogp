@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
 import BottomNav from "./components/BottomNav";
+import CampeonatoPopup from "./components/CampeonatoPopup";
 import { createClient } from "@/utils/supabase/server";
 
 const geistSans = Geist({
@@ -52,6 +53,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col pb-16 sm:pb-0 bg-zinc-50">
         <Header email={user?.email ?? null} />
+        <CampeonatoPopup />
         {children}
         <footer className="mt-auto bg-black text-zinc-600 text-center text-sm py-4 hidden sm:block">
           Porra MotoGP · Hecho con amigos
