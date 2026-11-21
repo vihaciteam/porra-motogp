@@ -1,7 +1,8 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
 export default function NuevaContrasenaPage() {
@@ -9,9 +10,18 @@ export default function NuevaContrasenaPage() {
   const [password2, setPassword2] = useState("");
   const [cargando,  setCargando]  = useState(false);
   const [error,     setError]     = useState("");
+  const [listo,     setListo]     = useState(false);
+  const [sinSesion, setSinSesion] = useState(false);
 
   const supabase = createClient();
   const router   = useRouter();
+
+  useEffect(() => {
+    // Verificar que hay una sesión activa (establecida por /auth/callback)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) setSinSesion(true);
+    });
+  }, []);
 
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
@@ -30,11 +40,47 @@ export default function NuevaContrasenaPage() {
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
-      setError("No se pudo actualizar la contraseña. Vuelve a intentarlo.");
+      setError("No se pudo actualizar la contraseña. El enlace puede haber expirado.");
       setCargando(false);
     } else {
-      router.push("/apuesta");
+      setListo(true);
+      setTimeout(() => router.push("/login"), 3000);
     }
+  }
+
+  if (listo) {
+    return (
+      <div className="flex flex-1 items-center justify-center px-4 py-16 bg-zinc-50">
+        <div className="w-full max-w-sm text-center flex flex-col items-center gap-4">
+          <div className="text-5xl">✅</div>
+          <h1 className="text-2xl font-black text-black">¡Contraseña actualizada!</h1>
+          <p className="text-zinc-400 text-sm">Redirigiendo al login en unos segundos…</p>
+          <Link href="/login" className="text-sm font-bold text-black hover:text-red-600 transition-colors">
+            Ir al login →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (sinSesion) {
+    return (
+      <div className="flex flex-1 items-center justify-center px-4 py-16 bg-zinc-50">
+        <div className="w-full max-w-sm text-center flex flex-col items-center gap-4 bg-white rounded-2xl p-8 shadow-sm border border-zinc-100">
+          <div className="text-5xl">⚠️</div>
+          <h1 className="text-xl font-black text-black">Enlace expirado o inválido</h1>
+          <p className="text-zinc-400 text-sm">
+            Este enlace ya no es válido. Solicita uno nuevo desde la página de recuperación.
+          </p>
+          <Link
+            href="/recuperar"
+            className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-full transition-colors"
+          >
+            Solicitar nuevo enlace
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -95,4 +141,3 @@ export default function NuevaContrasenaPage() {
     </div>
   );
 }
-

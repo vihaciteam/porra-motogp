@@ -30,6 +30,12 @@ export default function PerfilPage() {
   const [mensaje, setMensaje] = useState<{ texto: string; ok: boolean } | null>(null);
   const [stats, setStats] = useState<StatsPersonales | null>(null);
 
+  // Cambiar contraseña
+  const [pwAbierto,  setPwAbierto]  = useState(false);
+  const [pw1,        setPw1]        = useState("");
+  const [pw2,        setPw2]        = useState("");
+  const [pwCargando, setPwCargando] = useState(false);
+
   const fileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
   const router   = useRouter();
@@ -180,6 +186,28 @@ export default function PerfilPage() {
     setSubiendo(false);
   }
 
+  async function cambiarContrasena(e: React.FormEvent) {
+    e.preventDefault();
+    setMensaje(null);
+    if (pw1.length < 6) {
+      setMensaje({ texto: "La contraseña debe tener al menos 6 caracteres.", ok: false });
+      return;
+    }
+    if (pw1 !== pw2) {
+      setMensaje({ texto: "Las contraseñas no coinciden.", ok: false });
+      return;
+    }
+    setPwCargando(true);
+    const { error } = await supabase.auth.updateUser({ password: pw1 });
+    if (error) {
+      setMensaje({ texto: "No se pudo cambiar la contraseña. Inténtalo de nuevo.", ok: false });
+    } else {
+      setMensaje({ texto: "✅ Contraseña actualizada correctamente.", ok: true });
+      setPw1(""); setPw2(""); setPwAbierto(false);
+    }
+    setPwCargando(false);
+  }
+
   async function guardarNombre(e: React.FormEvent) {
     e.preventDefault();
     if (!userId) return;
@@ -283,6 +311,55 @@ export default function PerfilPage() {
           {guardando ? "Guardando…" : "Guardar nombre"}
         </button>
       </form>
+
+      {/* Cambiar contraseña */}
+      <div className="bg-white rounded-2xl border-2 border-zinc-100 shadow-sm overflow-hidden">
+        <button
+          type="button"
+          onClick={() => { setPwAbierto(o => !o); setMensaje(null); }}
+          className="w-full flex items-center justify-between px-6 py-4 text-left"
+        >
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-zinc-400">Seguridad</p>
+            <p className="font-bold text-black text-sm mt-0.5">Cambiar contraseña</p>
+          </div>
+          <span className={`text-zinc-400 transition-transform ${pwAbierto ? "rotate-180" : ""}`}>▾</span>
+        </button>
+
+        {pwAbierto && (
+          <form onSubmit={cambiarContrasena} className="px-6 pb-6 flex flex-col gap-3 border-t border-zinc-100 pt-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-black">Nueva contraseña</label>
+              <input
+                type="password"
+                value={pw1}
+                onChange={e => setPw1(e.target.value)}
+                required
+                placeholder="Mínimo 6 caracteres"
+                className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-black">Repite la contraseña</label>
+              <input
+                type="password"
+                value={pw2}
+                onChange={e => setPw2(e.target.value)}
+                required
+                placeholder="••••••••"
+                className="border-2 border-zinc-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={pwCargando}
+              className="bg-red-600 hover:bg-red-700 disabled:bg-zinc-200 disabled:text-zinc-400 text-white font-bold py-2.5 rounded-full transition-colors mt-1 self-end px-6"
+            >
+              {pwCargando ? "Guardando..." : "Guardar contraseña"}
+            </button>
+          </form>
+        )}
+      </div>
 
       {mensaje && (
         <p className={`text-sm rounded-lg px-4 py-3 border ${
