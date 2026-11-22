@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const CONTENDIENTES = ["ñoño", "Carlos14", "Joseca", "JL83", "JL15", "Rosa30", "Sergio"];
+const CONTENDIENTES = ["ñoño", "Carlos14", "Joseca"];
 
 export default function CampeonatoPopup() {
   const [fase, setFase] = useState<"off" | "intro" | "contendientes" | "out">("off");
@@ -81,6 +81,17 @@ export default function CampeonatoPopup() {
       <div className="absolute inset-0" style={{
         background: "radial-gradient(ellipse at center, rgba(30,0,0,.7) 0%, rgba(0,0,0,1) 100%)"
       }} />
+
+      {/* Botón cerrar siempre visible */}
+      <button
+        onClick={cerrar}
+        className="absolute top-4 right-4 z-50 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 active:scale-90 transition-all border border-white/15"
+        aria-label="Cerrar"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1l12 12M13 1L1 13" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      </button>
 
       {/* Franja bandera española */}
       <div className="absolute top-0 left-0 right-0 flex" style={{ height: 5 }}>
